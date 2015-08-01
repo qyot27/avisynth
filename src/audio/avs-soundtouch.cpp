@@ -180,9 +180,9 @@ AVSValue __cdecl AVSsoundtouch::Create(AVSValue args, void*, IScriptEnvironment*
 	try {	// HIDE DAMN SEH COMPILER BUG!!!
   return new AVSsoundtouch(
       args[0].AsClip(),
-      args[1].AsFloat(100.0), 
-      args[2].AsFloat(100.0), 
-      args[3].AsFloat(100.0), 
+      args[1].AsFloatf(100.0f),
+      args[2].AsFloatf(100.0f),
+      args[3].AsFloatf(100.0f),
       &args[4],
       env);
 
