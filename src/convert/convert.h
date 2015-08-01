@@ -38,7 +38,7 @@
 #include "../internal.h"
 #include "../filters/field.h"
 #include "../filters/transform.h"
-
+#include "convert_yuy2torgb.h"
 
 /********************************************************************
 ********************************************************************/
@@ -101,24 +101,12 @@ inline int RGB2YUV(int rgb)
 }
 
 
-// in convert_a.asm
-extern "C" 
-{
-  extern void __cdecl mmx_YUY2toRGB24(const BYTE* src, BYTE* dst, const BYTE* src_end, int src_pitch, int row_size, int matrix);
-  extern void __cdecl mmx_YUY2toRGB32(const BYTE* src, BYTE* dst, const BYTE* src_end, int src_pitch, int row_size, int matrix);
-}
-
-
-
-
-
-
 /********************************************************
  *******   Colorspace GenericVideoFilter Classes   ******
  *******************************************************/
 
 
-class ConvertToRGB : public GenericVideoFilter 
+class ConvertToRGB : public GenericVideoFilter, public YUY2toRGBGenerator
 /**
   * Class to handle conversion to RGB & RGBA
  **/
