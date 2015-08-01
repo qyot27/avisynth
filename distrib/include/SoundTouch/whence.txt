@@ -5,3 +5,11 @@ http://www.surina.net/soundtouch/soundtouch-1.4.0.zip
 http://soundtouch.svn.sourceforge.net/viewvc/soundtouch/trunk.tar.gz?view=tar
 
 04 Jan 2010 IanB
+
+http://www.surina.net/soundtouch/soundtouch-1.8.0.zip
+
+21 Feb 2015 WilbertD
+
+http://www.surina.net/soundtouch/soundtouch-1.9.0.zip
+
+01 Jun 2015 IanB

@@ -41,8 +41,8 @@ RSC=rc.exe
 # PROP Output_Dir "..\..\..\src\Release"
 # PROP Intermediate_Dir "Release"
 # PROP Target_Dir ""
-MTL=midl.exe
 F90=df.exe
+MTL=midl.exe
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /YX /FD /c
 # ADD CPP /nologo /G6 /MD /W3 /GX /Zi /O2 /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /FR /FD /c
 # SUBTRACT CPP /YX
@@ -67,8 +67,8 @@ LIB32=link.exe -lib
 # PROP Output_Dir "..\..\..\src\Debug"
 # PROP Intermediate_Dir "Debug"
 # PROP Target_Dir ""
-MTL=midl.exe
 F90=df.exe
+MTL=midl.exe
 # ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /YX /FD /GZ /c
 # ADD CPP /nologo /G6 /MDd /W3 /Gm /Gi /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /FR /FD /I /GZ /c
 # SUBTRACT CPP /YX
@@ -93,8 +93,8 @@ LIB32=link.exe -lib
 # PROP Output_Dir "..\..\..\src\Relsym"
 # PROP Intermediate_Dir "Relsym"
 # PROP Target_Dir ""
-MTL=midl.exe
 F90=df.exe
+MTL=midl.exe
 # ADD BASE CPP /nologo /G6 /MD /W3 /GX /Zi /O2 /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /FR /FD /c
 # SUBTRACT BASE CPP /YX
 # ADD CPP /nologo /G6 /MD /W3 /GX /Zi /O2 /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /FAs /FR /FD /c
@@ -120,10 +120,6 @@ LIB32=link.exe -lib
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 # Begin Source File
 
-SOURCE=.\3dnow_win.cpp
-# End Source File
-# Begin Source File
-
 SOURCE=.\AAFilter.cpp
 # End Source File
 # Begin Source File
@@ -140,7 +136,15 @@ SOURCE=.\FIRFilter.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\mmx_optimized.cpp
+SOURCE=.\InterpolateCubic.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\InterpolateLinear.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\InterpolateShannon.cpp
 # End Source File
 # Begin Source File
 
@@ -181,6 +185,18 @@ SOURCE=.\FIFOSamplePipe.h
 # Begin Source File
 
 SOURCE=.\FIRFilter.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\InterpolateCubic.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\InterpolateLinear.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\InterpolateShannon.h
 # End Source File
 # Begin Source File
 

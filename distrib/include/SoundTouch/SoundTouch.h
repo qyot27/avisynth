@@ -41,10 +41,10 @@
 ///
 ////////////////////////////////////////////////////////////////////////////////
 //
-// Last changed  : $Date: 2006/02/05 16:44:06 $
-// File revision : $Revision: 1.14 $
+// Last changed  : $Date: 2015-05-18 15:28:41 +0000 (Mon, 18 May 2015) $
+// File revision : $Revision: 4 $
 //
-// $Id: SoundTouch.h,v 1.14 2006/02/05 16:44:06 Olli Exp $
+// $Id: SoundTouch.h 216 2015-05-18 15:28:41Z oparviai $
 //
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -79,10 +79,10 @@ namespace soundtouch
 {
 
 /// Soundtouch library version string
-#define SOUNDTOUCH_VERSION          "1.3.1"
+#define SOUNDTOUCH_VERSION          "1.9.0"
 
 /// SoundTouch library version id
-#define SOUNDTOUCH_VERSION_ID       010301
+#define SOUNDTOUCH_VERSION_ID       (10900)
 
 //
 // Available setting IDs for the 'setSetting' & 'get_setting' functions:
@@ -116,6 +116,31 @@ namespace soundtouch
 #define SETTING_OVERLAP_MS          5
 
 
+/// Call "getSetting" with this ID to query nominal average processing sequence
+/// size in samples. This value tells approcimate value how many input samples
+/// SoundTouch needs to gather before it does DSP processing run for the sample batch.
+///
+/// Notices:
+/// - This is read-only parameter, i.e. setSetting ignores this parameter
+/// - Returned value is approximate average value, exact processing batch
+///   size may wary from time to time
+/// - This parameter value is not constant but may change depending on
+///   tempo/pitch/rate/samplerate settings.
+#define SETTING_NOMINAL_INPUT_SEQUENCE		6
+
+
+/// Call "getSetting" with this ID to query nominal average processing output
+/// size in samples. This value tells approcimate value how many output samples
+/// SoundTouch outputs once it does DSP processing run for a batch of input samples.
+///
+/// Notices:
+/// - This is read-only parameter, i.e. setSetting ignores this parameter
+/// - Returned value is approximate average value, exact processing batch
+///   size may wary from time to time
+/// - This parameter value is not constant but may change depending on
+///   tempo/pitch/rate/samplerate settings.
+#define SETTING_NOMINAL_OUTPUT_SEQUENCE		7
+
 class SoundTouch : public FIFOProcessor
 {
 private:
@@ -135,7 +160,7 @@ private:
     float virtualPitch;
 
     /// Flag: Has sample rate been set?
-    BOOL  bSrateSet;
+    bool  bSrateSet;
 
     /// Calculates effective rate & tempo valuescfrom 'virtualRate', 'virtualTempo' and 
     /// 'virtualPitch' parameters.
@@ -222,17 +247,17 @@ public:
     /// Changes a setting controlling the processing system behaviour. See the
     /// 'SETTING_...' defines for available setting ID's.
     /// 
-    /// \return 'TRUE' if the setting was succesfully changed
-    BOOL setSetting(uint settingId,   ///< Setting ID number. see SETTING_... defines.
-                    uint value        ///< New setting value.
+    /// \return 'true' if the setting was succesfully changed
+    bool setSetting(int settingId,   ///< Setting ID number. see SETTING_... defines.
+                    int value        ///< New setting value.
                     );
 
     /// Reads a setting controlling the processing system behaviour. See the
     /// 'SETTING_...' defines for available setting ID's.
     ///
     /// \return the setting value.
-    uint getSetting(uint settingId    ///< Setting ID number, see SETTING_... defines.
-                    ) const;
+    int getSetting(int settingId    ///< Setting ID number, see SETTING_... defines.
+                   ) const;
 
     /// Returns number of samples currently unprocessed.
     virtual uint numUnprocessedSamples() const;
