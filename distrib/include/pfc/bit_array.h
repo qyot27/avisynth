@@ -192,7 +192,7 @@ public:
 	inline static void g_set(unsigned char * ptr,unsigned idx,bool val)
 	{
 		unsigned char & dst = ptr[idx>>3];
-		unsigned char mask = 1<<(idx&7);
+		unsigned char mask = (unsigned char)(1<<(idx&7));
 		dst = val ? dst|mask : dst&~mask;
 	}
 

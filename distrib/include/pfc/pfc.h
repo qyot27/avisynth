@@ -43,6 +43,9 @@
 
 #define tabsize(x) (sizeof(x)/sizeof(*x))
 
+#pragma warning (disable: 4100) // unreferenced formal parameter
+#pragma warning (disable: 4512) // assignment operator could not be generated
+
 #include "bit_array.h"
 //#include "critsec.h"
 #include "mem_block.h"

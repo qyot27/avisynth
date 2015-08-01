@@ -17,7 +17,7 @@ void string_base::add_char(unsigned c)
 void string_base::skip_trailing_char(unsigned skip)
 {
 	const char * str = get_ptr();
-	unsigned ptr,trunc;
+	unsigned ptr, trunc = 0;
 	bool need_trunc = false;
 	for(ptr=0;str[ptr];)
 	{

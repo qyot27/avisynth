@@ -17,24 +17,24 @@ static const GUID <<name>> =
 
 */
 
-unsigned GUID_from_text::read_hex(char c)
+unsigned char GUID_from_text::read_hex(char c)
 {
-	if (c>='0' && c<='9') return (unsigned)c - '0';
-	else if (c>='a' && c<='f') return 0xa + (unsigned)c - 'a';
-	else if (c>='A' && c<='F') return 0xa + (unsigned)c - 'A';
+	if (c>='0' && c<='9') return (unsigned char)c - '0';
+	else if (c>='a' && c<='f') return 0xa + (unsigned char)c - 'a';
+	else if (c>='A' && c<='F') return 0xa + (unsigned char)c - 'A';
 	else return 0;
 }
 
-unsigned GUID_from_text::read_byte(const char * ptr)
+unsigned char GUID_from_text::read_byte(const char * ptr)
 {
 	return (read_hex(ptr[0])<<4) | read_hex(ptr[1]);
 }
-unsigned GUID_from_text::read_word(const char * ptr)
+unsigned short GUID_from_text::read_word(const char * ptr)
 {
 	return (read_byte(ptr)<<8) | read_byte(ptr+2);
 }
 
-unsigned GUID_from_text::read_dword(const char * ptr)
+unsigned long GUID_from_text::read_dword(const char * ptr)
 {
 	return (read_word(ptr)<<16) | read_word(ptr+4);
 }
@@ -63,7 +63,7 @@ GUID_from_text::GUID_from_text(const char * text)
 	(GUID)*this = mem_ops<GUID>::make_null_item();
 
 	
-	do {
+	for (;;) {
 		if (text+8>max) break;
 		Data1 = read_dword(text);
 		text += 8;
@@ -82,5 +82,6 @@ GUID_from_text::GUID_from_text(const char * text)
 		while(*text=='-') text++;
 		if (text+12>max) break;
 		read_bytes(Data4+2,6,text);
-	} while(false);
+		break;
+	}
 }

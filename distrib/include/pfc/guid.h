@@ -4,10 +4,10 @@
 
 class GUID_from_text : public GUID
 {
-	unsigned read_hex(char c);
-	unsigned read_byte(const char * ptr);
-	unsigned read_word(const char * ptr);
-	unsigned read_dword(const char * ptr);
+	unsigned char  read_hex(char c);
+	unsigned char  read_byte(const char * ptr);
+	unsigned short read_word(const char * ptr);
+	unsigned long  read_dword(const char * ptr);
 	void read_bytes(unsigned char * out,unsigned num,const char * ptr);
 
 public:

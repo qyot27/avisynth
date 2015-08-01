@@ -35,7 +35,7 @@ unsigned utf8_decode_char(const char *p_utf8,unsigned * wide,unsigned max)
 	unsigned res=0;
 	unsigned n;
 	unsigned cnt=0;
-	while(1)
+	for (;;)
 	{
 		if ((*utf8&mask_tab[cnt])==val_tab[cnt]) break;
 		if (++cnt>=max) return 0;
@@ -96,27 +96,27 @@ unsigned utf8_encode_char(unsigned wide,char * target)
 	switch (count)
 	{
     case 6:
-		target[5] = 0x80 | (wide & 0x3F);
+		target[5] = char(0x80 | (wide & 0x3F));
 		wide = wide >> 6;
 		wide |= 0x4000000;
     case 5:
-		target[4] = 0x80 | (wide & 0x3F);
+		target[4] = char(0x80 | (wide & 0x3F));
 		wide = wide >> 6;
 		wide |= 0x200000;
     case 4:
-		target[3] = 0x80 | (wide & 0x3F);
+		target[3] = char(0x80 | (wide & 0x3F));
 		wide = wide >> 6;
 		wide |= 0x10000;
     case 3:
-		target[2] = 0x80 | (wide & 0x3F);
+		target[2] = char(0x80 | (wide & 0x3F));
 		wide = wide >> 6;
 		wide |= 0x800;
     case 2:
-		target[1] = 0x80 | (wide & 0x3F);
+		target[1] = char(0x80 | (wide & 0x3F));
 		wide = wide >> 6;
 		wide |= 0xC0;
 	case 1:
-		target[0] = wide;
+		target[0] = char(wide);
 	}
 
 	return count;
@@ -181,17 +181,17 @@ UINT char_lower(UINT param)
 		if (param>='A' && param<='Z') param += 'a' - 'A';
 		return param;
 	}
-	else return towlower(param);
+	else return towlower((wint_t)param);
 }
 
 UINT char_upper(UINT param)
 {
 	if (param<128)
 	{
-		if (param>='a' && param<='z') param += 'A' - 'a';
+		if (param>='a' && param<='z') param -= 'a' - 'A';
 		return param;
 	}
-	else return towupper(param);
+	else return towupper((wint_t)param);
 }
 
 UINT utf8_get_char(const char * src)
@@ -549,7 +549,7 @@ void recover_invalid_utf8(const char * src,char * out,unsigned replace)
 {
 	while(!check_end_of_string(src))
 	{
-		unsigned c,d;
+		unsigned c = 0, d;
 		__try {
 			d = utf8_decode_char(src,&c);
 		} __except(1) {d = 0;}
