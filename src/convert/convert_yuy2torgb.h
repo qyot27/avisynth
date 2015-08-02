@@ -48,15 +48,15 @@ public:
   ~YUY2toRGBGenerator();
 
 protected:
-  void Generate(bool isRGB32, IScriptEnvironment* env);
+  void Generate(bool isRGB32, int theMatrix, IScriptEnvironment* env);
 
   DynamicAssembledCode assembly;
 
 private:
   void Get_Y(Assembler &x86, MMREG mm_A, int uyvy);
   void Get_UV(Assembler &x86, MMREG mm_A, int uyvy);
-  void InnerLoop(Assembler &x86, int uyvy, int rgb32, int no_next_pixel);
-  void YUV2RGB_PROC(Assembler &x86, int uyvy, int rgb32);
+  void InnerLoop(Assembler &x86, int uyvy, int rgb32, int no_next_pixel, bool Y_16);
+  void YUV2RGB_PROC(Assembler &x86, int uyvy, int rgb32, int theMatrix);
 };
 
 

@@ -54,9 +54,9 @@ YUY2toRGBGenerator::~YUY2toRGBGenerator() {
 struct yuv2rgb_constants {
   __int64 x0000_0000_0010_0010;
   __int64 x0080_0080_0080_0080;
-  __int64 x00FF_00FF_00FF_00FF;
   __int64 x00002000_00002000;
   __int64 xFF000000_FF000000;
+
   __int64 cy;
   __int64 crv;
   __int64 cgu_cgv;
@@ -66,9 +66,9 @@ struct yuv2rgb_constants {
 __declspec(align(64)) struct yuv2rgb_constants yuv2rgb_constants_rec601 = {
   0x00000000000100010,  //    16
   0x00080008000800080,  //   128
-  0x000FF00FF00FF00FF,  //
   0x00000200000002000,  //  8192        = (0.5)<<14
   0x0FF000000FF000000,  //
+
   0x000004A8500004A85,  // 19077        = (255./219.)<<14+0.5
   0x03313000033130000,  // 13075        = ((1-0.299)*255./112.)<<13+0.5
   0x0E5FCF377E5FCF377,  // -6660, -3209 = ((K-1)*K/0.587*255./112.)<<13-0.5, K=(0.299, 0.114)
@@ -78,9 +78,9 @@ __declspec(align(64)) struct yuv2rgb_constants yuv2rgb_constants_rec601 = {
 __declspec(align(64)) struct yuv2rgb_constants yuv2rgb_constants_PC_601 = {
   0x00000000000000000,  //     0
   0x00080008000800080,  //   128
-  0x000FF00FF00FF00FF,  //
   0x00000200000002000,  //  8192        = (0.5)<<14
   0x0FF000000FF000000,  //
+
   0x00000400000004000,  // 16384        = (1.)<<14+0.5
   0x02D0B00002D0B0000,  // 11531        = ((1-0.299)*255./127.)<<13+0.5
   0x0E90FF4F2E90FF4F2,  // -5873, -2830 = (((K-1)*K/0.587)*255./127.)<<13-0.5, K=(0.299, 0.114)
@@ -90,9 +90,9 @@ __declspec(align(64)) struct yuv2rgb_constants yuv2rgb_constants_PC_601 = {
 __declspec(align(64)) struct yuv2rgb_constants yuv2rgb_constants_rec709 = {
   0x00000000000100010,  //    16
   0x00080008000800080,  //   128
-  0x000FF00FF00FF00FF,  //
   0x00000200000002000,  //  8192        = (0.5)<<14
   0x0FF000000FF000000,  //
+
   0x000004A8500004A85,  // 19077        = (255./219.)<<14+0.5
   0x0395E0000395E0000,  // 14686        = ((1-0.2126)*255./112.)<<13+0.5
   0x0EEF2F92DEEF2F92D,  // -4366, -1747 = ((K-1)*K/0.7152*255./112.)<<13-0.5, K=(0.2126, 0.0722)
@@ -102,9 +102,9 @@ __declspec(align(64)) struct yuv2rgb_constants yuv2rgb_constants_rec709 = {
 __declspec(align(64)) struct yuv2rgb_constants yuv2rgb_constants_PC_709 = {
   0x00000000000000000,  //     0
   0x00080008000800080,  //   128
-  0x000FF00FF00FF00FF,  //
   0x00000200000002000,  //  8192        = (0.5)<<14
   0x0FF000000FF000000,  //
+
   0x00000400000004000,  // 16384        = (1.)<<14+0.5
   0x03298000032980000,  // 12952        = ((1-0.2126)*255./127.)<<13+0.5
   0x0F0F6F9FBF0F6F9FB,  // -3850, -1541 = (((K-1)*K/0.7152)*255./127.)<<13-0.5, K=(0.2126, 0.0722)
@@ -114,13 +114,13 @@ __declspec(align(64)) struct yuv2rgb_constants yuv2rgb_constants_PC_709 = {
 enum {
   ofs_x0000_0000_0010_0010 = 0,
   ofs_x0080_0080_0080_0080 = 8,
-  ofs_x00FF_00FF_00FF_00FF = 16,
-  ofs_x00002000_00002000 = 24,
-  ofs_xFF000000_FF000000 = 32,
-  ofs_cy = 40,
-  ofs_crv = 48,
-  ofs_cgu_cgv = 56,
-  ofs_cbu = 64
+  ofs_x00002000_00002000   = 16,
+  ofs_xFF000000_FF000000   = 24,
+
+  ofs_cy = 32,
+  ofs_crv = 40,
+  ofs_cgu_cgv = 48,
+  ofs_cbu = 56
 };
 
 // ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -130,7 +130,7 @@ void YUY2toRGBGenerator::Get_Y(Assembler &x86, MMREG mm_A, int uyvy) {
     x86.psrlw(      mm_A, 8);
   }
   else {
-    x86.pand(       mm_A, qword_ptr[edx+ofs_x00FF_00FF_00FF_00FF]);
+    x86.pand(       mm_A, mm7);
   }
 }
 
@@ -140,7 +140,7 @@ void YUY2toRGBGenerator::Get_UV(Assembler &x86, MMREG mm_A, int uyvy) {
 }
 
 
-void YUY2toRGBGenerator::InnerLoop(Assembler &x86, int uyvy, int rgb32, int no_next_pixel) {
+void YUY2toRGBGenerator::InnerLoop(Assembler &x86, int uyvy, int rgb32, int no_next_pixel, bool Y_16) {
 /*
 ;; This YUV422->RGB conversion code uses only four MMX registers per
 ;; source dword, so I convert two dwords in parallel.  Lines corresponding
@@ -148,8 +148,12 @@ void YUY2toRGBGenerator::InnerLoop(Assembler &x86, int uyvy, int rgb32, int no_n
 ;; overlap, except at the end and in the three lines marked ***.
 ;; revised 4july, 2002 to properly set alpha in rgb32 to default "on" & other small memory optimizations
 */
+// mm0 mm1 mm2 mm3 mm4 mm5 mm6 mm7
+
     x86.movd(       mm0, dword_ptr[esi]);
-     x86.movd(      mm5, dword_ptr[esi+4]);
+     x86.pcmpeqw(   mm7, mm7);                     // 0xFFFFFFFFFFFFFFFFi64
+    x86.movd(       mm5, dword_ptr[esi+4]);
+     x86.psrlw(     mm7, 8);                       // 0x00FF00FF00FF00FFi64
     x86.movq(       mm1, mm0);
   Get_Y(x86,        mm0, uyvy);                    // mm0 = __________Y1__Y0
      x86.movq(      mm4, mm5);
@@ -157,9 +161,11 @@ void YUY2toRGBGenerator::InnerLoop(Assembler &x86, int uyvy, int rgb32, int no_n
   Get_Y(x86,        mm4, uyvy);                    // mm4 = __________Y3__Y2
     x86.movq(       mm2, mm5);                     // *** avoid reload from [esi+4]
   Get_UV(x86,       mm5, uyvy);                    // mm5 = __________V2__U2
+  if (Y_16)
     x86.psubw(      mm0, qword_ptr[edx+ofs_x0000_0000_0010_0010]);                   // (Y-16)
      x86.movd(      mm6, dword_ptr[esi+8-4*(no_next_pixel)]);
   Get_UV(x86,       mm2, uyvy);                    // mm2 = __________V2__U2
+  if (Y_16)
      x86.psubw(     mm4, qword_ptr[edx+ofs_x0000_0000_0010_0010]);                   // (Y-16)
     x86.paddw(      mm2, mm1);                     // 2*UV1=UV0+UV2
   Get_UV(x86,       mm6, uyvy);                    // mm6 = __________V4__U4
@@ -254,20 +260,19 @@ void YUY2toRGBGenerator::InnerLoop(Assembler &x86, int uyvy, int rgb32, int no_n
 //        [esp+ 8] BYTE* dst,
 //        [esp+12] const BYTE* src_end,
 //        [esp+16] int src_pitch,
-//        [esp+20] int row_size,
-//        [esp+24] rec709 matrix);  0=rec601, 1=rec709, 3=PC_601, 7=PC_709
+//        [esp+20] int row_size
 
 // ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-void YUY2toRGBGenerator::YUV2RGB_PROC(Assembler &x86, int uyvy, int rgb32) {
+void YUY2toRGBGenerator::YUV2RGB_PROC(Assembler &x86, int uyvy, int rgb32, int theMatrix) {
   enum {             // Argument offsets
     src       = 0,
     dstp      = 4,
     src_end   = 8,
     src_pitch = 12,
     row_size  = 16,
-    matrix    = 20
   };
+  bool Y_16;
 
     x86.push(       esi);
     x86.push(       edi);
@@ -278,19 +283,23 @@ void YUY2toRGBGenerator::YUV2RGB_PROC(Assembler &x86, int uyvy, int rgb32) {
     x86.mov(        edi, dword_ptr[ebp+dstp]);     // dstp
     x86.mov(        ebx, dword_ptr[ebp+row_size]); // row_size
 
-    x86.mov(        edx, (int)&yuv2rgb_constants_rec601);
-    x86.test(       byte_ptr[ebp+matrix], 1);      // matrix
-    x86.jz(         "loop0");
-    x86.mov(        edx, (int)&yuv2rgb_constants_rec709);
-
-    x86.test(       byte_ptr[ebp+matrix], 2);      // matrix
-    x86.jz(         "loop0");
-    x86.mov(        edx, (int)&yuv2rgb_constants_PC_601);
-
-    x86.test(       byte_ptr[ebp+matrix], 4);      // matrix
-    x86.jz(         "loop0");
-    x86.mov(        edx, (int)&yuv2rgb_constants_PC_709);
-
+  switch (theMatrix) {
+    case 1:
+      Y_16 =                 !!yuv2rgb_constants_rec709.x0000_0000_0010_0010;
+      x86.mov(      edx, (int)&yuv2rgb_constants_rec709);
+      break;
+    case 3:
+      Y_16 =                 !!yuv2rgb_constants_PC_601.x0000_0000_0010_0010;
+      x86.mov(      edx, (int)&yuv2rgb_constants_PC_601);
+      break;
+    case 7:
+      Y_16 =                 !!yuv2rgb_constants_PC_709.x0000_0000_0010_0010;
+      x86.mov(      edx, (int)&yuv2rgb_constants_PC_709);
+      break;
+    default:
+      Y_16 =                 !!yuv2rgb_constants_rec601.x0000_0000_0010_0010;
+      x86.mov(      edx, (int)&yuv2rgb_constants_rec601);
+  }
 //loop0:
     x86.align(      16);
     x86.label(      "loop0");
@@ -301,11 +310,11 @@ void YUY2toRGBGenerator::YUV2RGB_PROC(Assembler &x86, int uyvy, int rgb32) {
     x86.align(      16);
     x86.label(      "loop1");
 
-  InnerLoop(x86, uyvy, rgb32, 0);
+  InnerLoop(x86, uyvy, rgb32, 0, Y_16);
 
     x86.jb(         "loop1");
 
-  InnerLoop(x86, uyvy, rgb32, 1);
+  InnerLoop(x86, uyvy, rgb32, 1, Y_16);
 
     x86.sub(        esi, ebx);
     x86.cmp(        esi, dword_ptr[ebp+src]);      // src
@@ -319,14 +328,14 @@ void YUY2toRGBGenerator::YUV2RGB_PROC(Assembler &x86, int uyvy, int rgb32) {
 }
 
 
-void YUY2toRGBGenerator::Generate(bool isRGB32, IScriptEnvironment* env) {
+void YUY2toRGBGenerator::Generate(bool isRGB32, int theMatrix, IScriptEnvironment* env) {
 
   Assembler x86;   // This is the class that assembles the code.
 
     x86.push(       ebp);
     x86.mov(        ebp, dword_ptr[esp+4+4]);      // Pointer to args list
 
-  YUV2RGB_PROC(x86, 0, (int)isRGB32);
+  YUV2RGB_PROC(x86, 0, (int)isRGB32, theMatrix);
 
     x86.xor(        eax, eax);
     x86.pop(        ebp);
