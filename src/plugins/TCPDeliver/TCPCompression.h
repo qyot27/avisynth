@@ -36,13 +36,14 @@
 
 #define ZLIB_WINAPI
 
-#include "lzo/include/lzoconf.h"
-#include "lzo/include/lzo1x.h"
+#include "lzo/lzoconf.h"
+#include "lzo/lzo1x.h"
+#include "lzo/lzo_asm.h"
 #include "huffman.h"
 #include "TCPCommon.h"
 #include "avisynth.h"
 #include <malloc.h>
-#include "zlib/include/zlib.h" 
+#include "zlib/zlib.h"
 
 /*******************************************************************************
   This is a generic compression class for implementing different types of

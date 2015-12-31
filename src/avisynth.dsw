@@ -47,6 +47,12 @@ Package=<5>
 
 Package=<4>
 {{{
+    Begin Project Dependency
+    Project_Dep_Name lzo
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name zlib
+    End Project Dependency
 }}}
 
 ###############################################################################
@@ -72,7 +78,31 @@ Package=<4>
 
 ###############################################################################
 
+Project: "lzo"=.\plugins\TCPDeliver\lzo.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
 Project: "pfc"=..\distrib\include\pfc\pfc.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "zlib"=.\plugins\TCPDeliver\zlib.dsp - Package Owner=<4>
 
 Package=<5>
 {{{

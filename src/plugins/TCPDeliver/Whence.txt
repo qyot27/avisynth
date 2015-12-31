@@ -1,0 +1,36 @@
+The locations that the Zlib sources were obtained from :-
+
+   http://zlib.net/zlib128.zip
+
+Unpack the contents into .\zlib
+
+Local Workspace and Project files to manage the library and sample programs.
+
+  .\zlib.dsw
+  .\zlib.dsp
+  .\example.dsp
+  .\infcover.dsp
+  .\minigzip.dsp
+
+
+The locations that the lzo sources were obtained from :-
+
+   http://www.oberhumer.com/opensource/lzo/download/lzo-2.09.tar.gz
+
+Unpack the contents into .\lzo
+
+Local Workspace and Project files to manage the library and test program.
+
+  .\lzo.dsw
+  .\lzo.dsp
+  .\lzotext.dsp
+
+The main avisynth.dsw now includes :-
+
+  .\lzo.dsp
+  .\zlib.dsp
+
+And .\TCPDeliver.dsp has a dependancy for these.
+
+
+December 2015 IanB

@@ -49,7 +49,7 @@ int TCPCompression::DeCompressImage(BYTE* image, int rowsize, int h, int pitch, 
 
 PredictDownLZO::PredictDownLZO() {
   compression_type = ServerFrameInfo::COMPRESSION_DELTADOWN_LZO;
-  wrkmem = (lzo_bytep) malloc(LZO1X_1_MEM_COMPRESS);
+  wrkmem = (lzo_bytep) malloc(LZO1X_1_15_MEM_COMPRESS);
 }
 
 PredictDownLZO::~PredictDownLZO(void) {
@@ -95,23 +95,23 @@ yloopback:
     emms
   }
   int in_size = pitch*h;
-  int out_size = -1;
+  lzo_uint out_size = ~0;
   dst = (BYTE*)_aligned_malloc(in_size + (in_size >>6) + 16 + 3, 16);
-  lzo1x_1_compress(image, in_size ,(unsigned char *)dst, (unsigned int *)&out_size , wrkmem);
+  lzo1x_1_15_compress(image, in_size, dst, &out_size, wrkmem);
   _RPT2(0, "TCPCompression: Compressed %d bytes into %d bytes.\n", in_size, out_size);
-  return out_size;
+  return (int)out_size;
 }
  
 int PredictDownLZO::DeCompressImage(BYTE* image, int rowsize, int h, int pitch, int in_size) {
   // Pitch mod 16
   // Height > 2
   inplace = false;    
-  unsigned int dst_size = pitch*h;
+  lzo_uint dst_size = pitch*h;
   dst = (BYTE*)_aligned_malloc(dst_size, 64);
-  lzo1x_decompress(image, in_size, dst, &dst_size, wrkmem);
+  lzo1x_decompress_asm_fast(image, in_size, dst, &dst_size, wrkmem);
 
   if ((int)dst_size != pitch*h) {
-    _RPT0(1,"TCPCompression: Size did NOT match");
+    _RPT0(1, "TCPCompression: Size did NOT match");
   }
     
   rowsize = (rowsize+15)&~15;
