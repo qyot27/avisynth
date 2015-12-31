@@ -107,7 +107,7 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 2,6,0,7
+ FILEVERSION 2,6,0,8
  PRODUCTVERSION 2,6,0,6
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
@@ -125,8 +125,8 @@ BEGIN
         BEGIN
             VALUE "Comments", "Homepage: http://www.avisynth.org\0"
             VALUE "CompanyName", "avisynth.org\0"
-            VALUE "FileDescription", "Avisynth TCPDeliver pluggin\0"
-            VALUE "FileVersion", "2, 6, 0, 7\0"
+            VALUE "FileDescription", "Avisynth TCPDeliver plugin\0"
+            VALUE "FileVersion", "2, 6, 0, 8\0"
             VALUE "InternalName", "TCPDeliver\0"
             VALUE "LegalCopyright", "© 2004-2015, Klaus Post.\0"
             VALUE "LegalTrademarks", "Released under GPL.\0"

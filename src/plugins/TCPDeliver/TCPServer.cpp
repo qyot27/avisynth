@@ -119,6 +119,10 @@ TCPServerListener::TCPServerListener(int port, PClip _child, IScriptEnvironment*
 
   // Get the local host information
   localHost = gethostbyname("");
+  if (!localHost || !localHost->h_addr_list) {
+    env->ThrowError("TCPServer: gethostbyname(\"\") - error=%d", WSAGetLastError());
+  }
+
   localIP = inet_ntoa (*(struct in_addr *) * localHost->h_addr_list);
 
 

@@ -281,15 +281,24 @@ TCPClientThread::TCPClientThread(const char* hostname, int port, const char* com
   data_waiting = false;
   thread_running = false;
   client_request = 0;
+
+  int iResult = WSAStartup( MAKEWORD(2, 2), &wsaData );
+  if ( iResult != NO_ERROR )
+    env->ThrowError("TCPClient: Could not start up Winsock.");
+
+  hostent* host_info = gethostbyname(hostname);
+  if (!host_info || !host_info->h_addr_list) {
+    if (WSAGetLastError() == WSAHOST_NOT_FOUND)
+      env->ThrowError("TCPClient: gethostbyname(\"%s\") - Host not found.", hostname);
+    else
+      env->ThrowError("TCPClient: gethostbyname(\"%s\") - error=%d", hostname, WSAGetLastError());
+  }
+
   reply = new ServerToClientReply();
 
   evtClientReadyForRequest = ::CreateEvent (NULL, FALSE, FALSE, NULL);
   evtClientReplyReady = ::CreateEvent (NULL, FALSE, FALSE, NULL);
   evtClientProcesRequest = ::CreateEvent (NULL, FALSE, FALSE, NULL);
-
-  int iResult = WSAStartup( MAKEWORD(2, 2), &wsaData );
-  if ( iResult != NO_ERROR )
-    env->ThrowError("TCPClient: Could not start up Winsock.");
 
   m_socket = socket( AF_INET, SOCK_STREAM, IPPROTO_TCP );
 
@@ -299,7 +308,6 @@ TCPClientThread::TCPClientThread(const char* hostname, int port, const char* com
     return ;
   }
 
-  hostent* host_info = gethostbyname(hostname);
   char* host_ip = *(host_info->h_addr_list);
   unsigned long addr = *(unsigned long*)(host_ip);
 
