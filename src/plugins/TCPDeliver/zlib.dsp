@@ -46,7 +46,7 @@ MTL=midl.exe
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "NDEBUG" /D "WIN32" /D "_MBCS" /D "_LIB" /FD /c
 # ADD CPP /nologo /MT /W3 /GX /O2 /Ob2 /I "./zlib" /D "NDEBUG" /D "_LIB" /D "LIB_WINAPI" /D "_CRT_NONSTDC_NO_WARNINGS" /D "_CRT_SECURE_NO_DEPRECATE" /D "_CRT_NONSTDC_NO_DEPRECATE" /D "ASMV" /D "ASMINF" /D "ZLIB_WINAPI" /D "WIN32" /D "_MBCS" /FR /FD /c
 # ADD BASE RSC /l 0x417 /d "NDEBUG"
-# ADD RSC /l 0x417 /d "NDEBUG"
+# ADD RSC /l 0x409 /d "NDEBUG"
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
@@ -71,7 +71,7 @@ MTL=midl.exe
 # ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "_DEBUG" /D "WIN32" /D "_MBCS" /D "_LIB" /FD /GZ /c
 # ADD CPP /nologo /MTd /W3 /Gm /Gi /ZI /Od /I "./zlib" /D "_DEBUG" /D "_LIB" /D "LIB_WINAPI" /D "_CRT_NONSTDC_NO_WARNINGS" /D "_CRT_SECURE_NO_DEPRECATE" /D "_CRT_NONSTDC_NO_DEPRECATE" /D "ASMV" /D "ASMINF" /D "ZLIB_WINAPI" /D "WIN32" /D "_MBCS" /FR /FD /GZ /c
 # ADD BASE RSC /l 0x417 /d "_DEBUG"
-# ADD RSC /l 0x417 /d "_DEBUG"
+# ADD RSC /l 0x409 /d "_DEBUG"
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
@@ -94,9 +94,9 @@ LIB32=link.exe -lib
 F90=df.exe
 MTL=midl.exe
 # ADD BASE CPP /nologo /MD /W3 /O2 /Ob2 /I "./zlib" /D "NDEBUG" /D "WIN32" /D "_MBCS" /D "_LIB" /D "LIB_WINAPI" /D "_CRT_NONSTDC_NO_WARNINGS" /D "_CRT_SECURE_NO_DEPRECATE" /D "_CRT_NONSTDC_NO_DEPRECATE" /D "ASMV" /D "ASMINF" /D "ZLIB_WINAPI" /FR /FD /c
-# ADD CPP /nologo /MD /W3 /GX /O2 /Ob2 /I "./zlib" /D "NDEBUG" /D "_LIB" /D "LIB_WINAPI" /D "_CRT_NONSTDC_NO_WARNINGS" /D "_CRT_SECURE_NO_DEPRECATE" /D "_CRT_NONSTDC_NO_DEPRECATE" /D "ASMV" /D "ASMINF" /D "ZLIB_WINAPI" /D "WIN32" /D "_MBCS" /FAcs /FR /FD /c
+# ADD CPP /nologo /MT /W3 /GX /O2 /Ob2 /I "./zlib" /D "NDEBUG" /D "_LIB" /D "LIB_WINAPI" /D "_CRT_NONSTDC_NO_WARNINGS" /D "_CRT_SECURE_NO_DEPRECATE" /D "_CRT_NONSTDC_NO_DEPRECATE" /D "ASMV" /D "ASMINF" /D "ZLIB_WINAPI" /D "WIN32" /D "_MBCS" /FAcs /FR /FD /c
 # ADD BASE RSC /l 0x417 /d "NDEBUG"
-# ADD RSC /l 0x417 /d "NDEBUG"
+# ADD RSC /l 0x409 /d "NDEBUG"
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
@@ -233,7 +233,7 @@ SOURCE=.\zlib\contrib\masmx86\inffas32.asm
 !IF  "$(CFG)" == "zlib - Win32 Release"
 
 # Begin Custom Build
-IntDir=.\Release
+IntDir=.\ReleaseZlib
 InputPath=.\zlib\contrib\masmx86\inffas32.asm
 InputName=inffas32
 
@@ -245,7 +245,7 @@ InputName=inffas32
 !ELSEIF  "$(CFG)" == "zlib - Win32 Debug"
 
 # Begin Custom Build
-IntDir=.\Debug
+IntDir=.\DebugZlib
 InputPath=.\zlib\contrib\masmx86\inffas32.asm
 InputName=inffas32
 
@@ -257,7 +257,7 @@ InputName=inffas32
 !ELSEIF  "$(CFG)" == "zlib - Win32 Relsym"
 
 # Begin Custom Build
-IntDir=.\Relsym
+IntDir=.\RelsymZlib
 InputPath=.\zlib\contrib\masmx86\inffas32.asm
 InputName=inffas32
 
@@ -276,7 +276,7 @@ SOURCE=.\zlib\contrib\masmx86\match686.asm
 !IF  "$(CFG)" == "zlib - Win32 Release"
 
 # Begin Custom Build
-IntDir=.\Release
+IntDir=.\ReleaseZlib
 InputPath=.\zlib\contrib\masmx86\match686.asm
 InputName=match686
 
@@ -288,7 +288,7 @@ InputName=match686
 !ELSEIF  "$(CFG)" == "zlib - Win32 Debug"
 
 # Begin Custom Build
-IntDir=.\Debug
+IntDir=.\DebugZlib
 InputPath=.\zlib\contrib\masmx86\match686.asm
 InputName=match686
 
@@ -300,7 +300,7 @@ InputName=match686
 !ELSEIF  "$(CFG)" == "zlib - Win32 Relsym"
 
 # Begin Custom Build
-IntDir=.\Relsym
+IntDir=.\RelsymZlib
 InputPath=.\zlib\contrib\masmx86\match686.asm
 InputName=match686
 
