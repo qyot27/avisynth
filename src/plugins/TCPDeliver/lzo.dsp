@@ -46,7 +46,7 @@ F90=df.exe
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "NDEBUG" /D "WIN32" /D "_MBCS" /D "_LIB" /FD /c
 # ADD CPP /nologo /MT /W3 /GX /O2 /Ob2 /I "./lzo/include" /D "_LIB" /D "NDEBUG" /D "WIN32" /D "_MBCS" /D "LZO_USE_ASM" /FR /FD /c
 # ADD BASE RSC /l 0x417 /d "NDEBUG"
-# ADD RSC /l 0x417 /d "NDEBUG"
+# ADD RSC /l 0x409 /d "NDEBUG"
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
@@ -71,7 +71,7 @@ F90=df.exe
 # ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "_DEBUG" /D "WIN32" /D "_MBCS" /D "_LIB" /FD /GZ /c
 # ADD CPP /nologo /MTd /W3 /Gm /Gi /ZI /Od /I "./lzo/include" /D "_LIB" /D "_DEBUG" /D "WIN32" /D "_MBCS" /D "LZO_USE_ASM" /FR /FD /GZ /c
 # ADD BASE RSC /l 0x417 /d "_DEBUG"
-# ADD RSC /l 0x417 /d "_DEBUG"
+# ADD RSC /l 0x409 /d "_DEBUG"
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
@@ -94,9 +94,9 @@ LIB32=link.exe -lib
 MTL=midl.exe
 F90=df.exe
 # ADD BASE CPP /nologo /MD /W3 /O2 /Ob2 /I "./lzo/include" /D "_LIB" /D "NDEBUG" /D "WIN32" /D "_MBCS" /D "LZO_USE_ASM" /FR /FD /c
-# ADD CPP /nologo /MD /W3 /GX /O2 /Ob2 /I "./lzo/include" /D "_LIB" /D "NDEBUG" /D "WIN32" /D "_MBCS" /D "LZO_USE_ASM" /FAcs /FR /FD /c
+# ADD CPP /nologo /MT /W3 /GX /O2 /Ob2 /I "./lzo/include" /D "_LIB" /D "NDEBUG" /D "WIN32" /D "_MBCS" /D "LZO_USE_ASM" /FAcs /FR /FD /c
 # ADD BASE RSC /l 0x417 /d "NDEBUG"
-# ADD RSC /l 0x417 /d "NDEBUG"
+# ADD RSC /l 0x409 /d "NDEBUG"
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
