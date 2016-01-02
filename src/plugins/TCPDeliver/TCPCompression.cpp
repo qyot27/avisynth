@@ -41,7 +41,7 @@ int TCPCompression::CompressImage(BYTE* image, int rowsize, int h, int pitch) {
   return pitch*h;
 }
 
-int TCPCompression::DeCompressImage(BYTE* image, int rowsize, int h, int pitch, int data_size) {
+int TCPCompression::DeCompressImage(BYTE* image, int rowsize, int h, int pitch, int data_size, BYTE* _dst) {
   dst = image;
   inplace = true;
   return pitch*h;
@@ -49,7 +49,7 @@ int TCPCompression::DeCompressImage(BYTE* image, int rowsize, int h, int pitch, 
 
 PredictDownLZO::PredictDownLZO() {
   compression_type = ServerFrameInfo::COMPRESSION_DELTADOWN_LZO;
-  wrkmem = (lzo_bytep) malloc(LZO1X_1_15_MEM_COMPRESS);
+  wrkmem = (lzo_bytep) malloc(LZO1X_1_MEM_COMPRESS);
 }
 
 PredictDownLZO::~PredictDownLZO(void) {
@@ -95,23 +95,26 @@ yloopback:
     emms
   }
   int in_size = pitch*h;
-  lzo_uint out_size = ~0;
-  dst = (BYTE*)_aligned_malloc(in_size + (in_size >>6) + 16 + 3, 16);
-  lzo1x_1_15_compress(image, in_size, dst, &out_size, wrkmem);
+  int out_size = -1;
+
+  dst = (BYTE*)_aligned_malloc(in_size + (in_size / 16) + 64 + 3, 16);
+//  dst = (BYTE*)_aligned_malloc(in_size + (in_size >>6) + 16 + 3, 16);
+  lzo1x_1_compress(image, in_size ,(unsigned char *)dst, (lzo_uint *)&out_size , wrkmem);
   _RPT2(0, "TCPCompression: Compressed %d bytes into %d bytes.\n", in_size, out_size);
-  return (int)out_size;
+  return out_size;
 }
  
-int PredictDownLZO::DeCompressImage(BYTE* image, int rowsize, int h, int pitch, int in_size) {
+int PredictDownLZO::DeCompressImage(BYTE* image, int rowsize, int h, int pitch, int in_size, BYTE* _dst) {
   // Pitch mod 16
   // Height > 2
   inplace = false;    
-  lzo_uint dst_size = pitch*h;
-  dst = (BYTE*)_aligned_malloc(dst_size, 64);
-  lzo1x_decompress_asm_fast(image, in_size, dst, &dst_size, wrkmem);
+  unsigned int dst_size = pitch*h;
+  dst = (BYTE*)_aligned_malloc(dst_size+4, 64);  // LZO fast may overwrite the buffer by up to 3 bytes, so we do not use inplace
+  lzo1x_decompress_asm_fast(image, in_size, dst, (lzo_uint *)&dst_size, wrkmem);
+//  lzo1x_decompress(image, in_size, dst, &dst_size, wrkmem);
 
   if ((int)dst_size != pitch*h) {
-    _RPT0(1, "TCPCompression: Size did NOT match");
+    _RPT0(1,"TCPCompression: Size did NOT match");
   }
     
   rowsize = (rowsize+15)&~15;
@@ -199,18 +202,19 @@ yloopback:
   int in_size = pitch*h;
   unsigned int out_size = in_size*2;
   dst = (BYTE*)_aligned_malloc(out_size, 16);
+
   out_size = Huffman_Compress(image, dst, in_size );
 
   _RPT2(0, "TCPCompression: Compressed %d bytes into %d bytes.(Huffman)\n", in_size, out_size);
   return out_size;
 }
  
-int PredictDownHuffman::DeCompressImage(BYTE* image, int rowsize, int h, int pitch, int in_size) {
+int PredictDownHuffman::DeCompressImage(BYTE* image, int rowsize, int h, int pitch, int in_size, BYTE* _dst) {
   // Pitch mod 16
   // Height > 2
-  inplace = false;    
+  inplace = !!_dst;
   unsigned int dst_size = pitch*h;
-  dst = (BYTE*)_aligned_malloc(dst_size, 64);
+  dst = _dst ? _dst : (BYTE*)_aligned_malloc(dst_size, 64);
 
   Huffman_Uncompress(image, dst, in_size, dst_size);
 
@@ -325,12 +329,13 @@ yloopback:
   return out_size;
 }
  
-int PredictDownGZip::DeCompressImage(BYTE* image, int rowsize, int h, int pitch, int in_size) {
+int PredictDownGZip::DeCompressImage(BYTE* image, int rowsize, int h, int pitch, int in_size, BYTE* _dst) {
   // Pitch mod 16
   // Height > 2
-  inplace = false;    
+  inplace = !!_dst;
   unsigned int dst_size = pitch*h;
-  dst = (BYTE*)_aligned_malloc(dst_size, 64);
+
+  dst = _dst ? _dst : (BYTE*)_aligned_malloc(dst_size, 64);
   memset(z, 0, sizeof(z_stream_s));
 
   unsigned int* dstint = (unsigned int*)&image[in_size-4];
@@ -386,3 +391,100 @@ yloopback:
 }
 
 
+PredictDownRLE::PredictDownRLE() {
+  compression_type = ServerFrameInfo::COMPRESSION_DELTADOWN_RLE;
+}
+
+PredictDownRLE::~PredictDownRLE(void) {
+}
+/******************************
+ * Downwards deltaencoded.
+ ******************************/
+
+int PredictDownRLE::CompressImage(BYTE* image, int rowsize, int h, int pitch) {
+  // Pitch mod 16
+  // Height > 2
+  inplace = false;
+  rowsize = (rowsize+15)&~15;
+
+  __asm {
+    xor eax, eax        // x offset
+    mov ecx, [pitch]
+    mov edx, rowsize
+xloopback:
+    mov ebx, [h]
+    mov esi, [image]    // src
+    pxor mm4, mm4   // left
+    pxor mm5, mm5   // left2
+yloopback:
+    movq mm0, [esi+eax]   // temp
+    movq mm1, [esi+eax+8]   // temp
+    movq mm2, mm0
+    movq mm3, mm1
+    psubb mm0, mm4  // left - temp
+    psubb mm1, mm5  // left - temp
+    movq [esi+eax], mm0
+    movq [esi+eax+8], mm1
+    movq mm4, mm2  // left = temp
+    movq mm5, mm3  // left = temp
+    add esi, ecx  // Next line
+    dec ebx
+    jnz yloopback
+
+    add eax, 16
+    cmp eax, edx
+    jl xloopback
+
+    emms
+  }
+
+  int in_size = pitch*h;
+  unsigned int out_size = in_size*2;
+  dst = (BYTE*)_aligned_malloc(out_size, 16);
+  out_size = RLE_Compress(image, dst, in_size );
+
+  _RPT2(0, "TCPCompression: Compressed %d bytes into %d bytes.(RLE)\n", in_size, out_size);
+  return out_size;
+}
+
+int PredictDownRLE::DeCompressImage(BYTE* image, int rowsize, int h, int pitch, int in_size, BYTE* _dst) {
+  // Pitch mod 16
+  // Height > 2
+  inplace = !!_dst;
+  unsigned int dst_size = pitch*h;
+  dst = _dst ? _dst : (BYTE*)_aligned_malloc(dst_size, 64);
+
+  RLE_Uncompress(image, dst, in_size);
+
+  rowsize = (rowsize+15)&~15;
+  image = dst;
+
+  __asm {
+    xor eax, eax        // x offset
+    mov ecx, [pitch]
+    mov edx, rowsize
+xloopback:
+    mov ebx, [h]
+    mov esi, [image]    // src
+    pxor mm4, mm4   // left
+    pxor mm5, mm5   // left2
+yloopback:
+    movq mm0, [esi+eax]   // src
+    movq mm1, [esi+eax+8]   // src2
+    paddb mm4, mm0  // left + src
+    paddb mm5, mm1  // left + src
+    movq [esi+eax], mm4
+    movq [esi+eax+8], mm5
+    add esi, ecx  // Next line
+    dec ebx
+    jnz yloopback
+
+    add eax, 16
+    cmp eax, edx
+    jl xloopback
+
+    emms
+  }
+  _RPT2(0, "TCPCompression: Decompressed %d bytes into %d bytes.(RLE)\n", in_size, dst_size);
+  return dst_size;
+}

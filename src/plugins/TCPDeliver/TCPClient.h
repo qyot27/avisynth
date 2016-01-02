@@ -44,7 +44,6 @@
 #include <winsock2.h>
 #include "avisynth.h"
 #include "TCPCompression.h"
-#include <ctype.h>
 
 AVSValue __cdecl Create_TCPClient(AVSValue args, void* user_data, IScriptEnvironment* env);
 
@@ -52,7 +51,7 @@ class ServerToClientReply {
 public:
   ServerToClientReply(ServerToClientReply* push_me = 0) {
     pushed_reply = push_me;
-    last_reply = new char[1];
+    last_reply = 0;
   }
   ServerToClientReply* pushed_reply;
   char* last_reply;
@@ -68,8 +67,7 @@ public:
   void SendRequest(char requestId, void* data, unsigned int bytes);
   void GetReply();
   bool IsDataPending();
-  void CleanUp();
-
+  IScriptEnvironment* env;
 
   HANDLE evtClientReadyForRequest;   // Client is ready to recieve a new request.
   HANDLE evtClientReplyReady;        // Client has finished processing the last request.
@@ -82,6 +80,7 @@ private:
   void PushReply();
   void PopReply();
   void RecievePacket();
+  void CleanUp();
   char* client_request;
   unsigned int client_request_bytes;
   WSADATA wsaData;
@@ -90,7 +89,7 @@ private:
   bool data_waiting;
 };
 
-UINT StartClient(LPVOID p);
+DWORD WINAPI StartClient(LPVOID p);
 
 class TCPClient  : public IClip {
 public:
@@ -100,7 +99,7 @@ public:
   void __stdcall GetAudio(void* buf, __int64 start, __int64 count, IScriptEnvironment* env);
   const VideoInfo& __stdcall GetVideoInfo();
   bool __stdcall GetParity(int n);
-  int __stdcall SetCacheHints(int cachehints,int frame_range) { return 0; } ;
+  void __stdcall SetCacheHints(int cachehints,int frame_range) { } ;
 
   TCPClientThread* client;
 private:
@@ -109,6 +108,8 @@ private:
   VideoInfo vi;
   HANDLE ClientThread;
   bool frame_requested;
+  CRITICAL_SECTION requestCriticalSection;
 };
+
 
 #endif

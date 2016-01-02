@@ -36,14 +36,15 @@
 
 #define ZLIB_WINAPI
 
-#include "lzo/lzoconf.h"
-#include "lzo/lzo1x.h"
-#include "lzo/lzo_asm.h"
+#include "lzo/include/lzoconf.h"
+#include "lzo/include/lzo1x.h"
+#include "lzo/include/lzo_asm.h"
 #include "huffman.h"
+#include "rle.h"
 #include "TCPCommon.h"
 #include "avisynth.h"
 #include <malloc.h>
-#include "zlib/zlib.h"
+#include "zlib/include/zlib.h"
 
 /*******************************************************************************
   This is a generic compression class for implementing different types of
@@ -73,8 +74,8 @@ public:
   virtual ~TCPCompression(void) {};
 
   virtual int CompressImage(BYTE* image, int rowsize, int h, int pitch);  // returns new size
-  virtual int DeCompressImage(BYTE* image, int rowsize, int h, int pitch, int data_size); // returns new size
-
+  virtual int DeCompressImage(BYTE* image, int rowsize, int h, int pitch, int data_size, BYTE* _dst); // returns new size
+  virtual char* GetName() {return "No Compression";}
 
   BYTE* dst;      // Must always be deallocated using _aligned_free().
   int compression_type;
@@ -88,7 +89,8 @@ public:
   virtual ~PredictDownLZO(void);
 
   int CompressImage(BYTE* image, int rowsize, int h, int pitch);
-  int DeCompressImage(BYTE* image, int rowsize, int h, int pitch, int data_size);
+  int DeCompressImage(BYTE* image, int rowsize, int h, int pitch, int data_size, BYTE* _dst);
+  virtual char* GetName() {return "Delta+LZO";}
 private:
   lzo_bytep wrkmem; 
 
@@ -100,7 +102,8 @@ public:
   virtual ~PredictDownHuffman(void);
 
   int CompressImage(BYTE* image, int rowsize, int h, int pitch);
-  int DeCompressImage(BYTE* image, int rowsize, int h, int pitch, int data_size);
+  int DeCompressImage(BYTE* image, int rowsize, int h, int pitch, int data_size, BYTE* _dst);
+  virtual char* GetName() {return "Delta+Huffman";}
 };
 
 class PredictDownGZip : public TCPCompression {
@@ -109,9 +112,20 @@ public:
   virtual ~PredictDownGZip(void);
 
   int CompressImage(BYTE* image, int rowsize, int h, int pitch);
-  int DeCompressImage(BYTE* image, int rowsize, int h, int pitch, int data_size);
+  int DeCompressImage(BYTE* image, int rowsize, int h, int pitch, int data_size, BYTE* _dst);
+  virtual char* GetName() {return "Delta+GZip";}
 private:
   z_stream_s *z;
+};
+
+class PredictDownRLE : public TCPCompression {
+public:
+  PredictDownRLE();
+  virtual ~PredictDownRLE(void);
+
+  int CompressImage(BYTE* image, int rowsize, int h, int pitch);
+  int DeCompressImage(BYTE* image, int rowsize, int h, int pitch, int data_size, BYTE* _dst);
+  virtual char* GetName() {return "Delta+RLE";}
 };
 
 #endif

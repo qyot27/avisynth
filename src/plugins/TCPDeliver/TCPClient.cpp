@@ -33,8 +33,10 @@
 // import and export plugins, or graphical user interfaces.
 
 // TCPDeliver (c) 2004 by Klaus Post
+#define _WIN32_WINNT 0x0403
 
 #include "TCPClient.h"
+#include "alignplanar.h"
 
 /**************************  TCP Client *****************************
   The TCPCLient is designed as a multithreaded application.
@@ -50,6 +52,9 @@
 TCPClient::TCPClient(const char* _hostname, int _port, const char* compression, IScriptEnvironment* env) : hostname(_hostname), port(_port) {
   LPDWORD ThreadId = 0;
 
+  if (!InitializeCriticalSectionAndSpinCount(&requestCriticalSection, 0x80000010) )
+    env->ThrowError("TCPClient: Could not initialize critical section");
+
   _RPT0(0, "TCPClient: Creating client object.\n");
   client = new TCPClientThread(hostname, port, compression, env);
   _RPT0(0, "TCPClient: Client object created.\n");
@@ -59,6 +64,7 @@ TCPClient::TCPClient(const char* _hostname, int _port, const char* compression, 
 }
 
 const VideoInfo& TCPClient::GetVideoInfo() {
+  EnterCriticalSection(&requestCriticalSection);
   if (client->IsDataPending()) {  // Ignore any pending data
     client->GetReply();  // Kill it.
   }
@@ -75,13 +81,14 @@ const VideoInfo& TCPClient::GetVideoInfo() {
   } else {
     _RPT0(1, "TCPClient: Did not recieve expected packet (SERVER_VIDEOINFO)");
   }
+  LeaveCriticalSection(&requestCriticalSection);
   return vi;
 }
 
 
 
 PVideoFrame __stdcall TCPClient::GetFrame(int n, IScriptEnvironment* env) {
-
+  EnterCriticalSection(&requestCriticalSection);
   int al_b = sizeof(ClientRequestFrame);
   ClientRequestFrame f;
   memset(&f, 0 , sizeof(ClientRequestFrame));
@@ -125,59 +132,17 @@ PVideoFrame __stdcall TCPClient::GetFrame(int n, IScriptEnvironment* env) {
 
     BYTE* dstp = frame->GetWritePtr();
     BYTE* srcp = (unsigned char*)client->reply->last_reply + sizeof(ServerFrameInfo);
-    TCPCompression* t = 0;
+    env->BitBlt(dstp, frame->GetPitch(), srcp, incoming_pitch, frame->GetRowSize(PLANAR_Y), frame->GetHeight(PLANAR_Y));
 
-    switch (fi->compression) {
-      case ServerFrameInfo::COMPRESSION_NONE:
-          t = (TCPCompression*)new TCPCompression();        
-        break;
-      case ServerFrameInfo::COMPRESSION_DELTADOWN_LZO: {
-          t = (TCPCompression*)new PredictDownLZO();
-          break;
-        }
-      case ServerFrameInfo::COMPRESSION_DELTADOWN_HUFFMAN: {
-          t = (TCPCompression*)new PredictDownHuffman();
-          break;
-                                                           }
-      case ServerFrameInfo::COMPRESSION_DELTADOWN_GZIP: {
-          t = (TCPCompression*)new PredictDownGZip();
-          break;
-        }
-      default:
-        env->ThrowError("TCPClient: Unknown compression.");
-    }
-
-    if (!vi.IsPlanar() || vi.IsY8()) {
-      t->DeCompressImage(srcp, fi->row_size, fi->height, fi->pitch, fi->compressed_bytes);
-      env->BitBlt(dstp, frame->GetPitch(), t->dst, incoming_pitch, frame->GetRowSize(), frame->GetHeight());
-      if (!t->inplace) {
-        _aligned_free(t->dst);
-      }
-      delete t;
-    } else {
-      // Y
-      t->DeCompressImage(srcp, fi->row_size, fi->height, fi->pitch, fi->comp_Y_bytes);
-      env->BitBlt(dstp, frame->GetPitch(), t->dst, incoming_pitch, frame->GetRowSize(), frame->GetHeight());
-      if (!t->inplace) _aligned_free(t->dst);
-
+    if (vi.IsPlanar() && !vi.IsY8()) {
       int uv_pitch = fi->pitchUV;
-      int uv_rowsize  = fi->row_sizeUV;
-      int uv_height = fi->heightUV;
-
-      // U
       srcp += fi->comp_Y_bytes;
-      t->DeCompressImage(srcp, uv_rowsize, uv_height, uv_pitch, fi->comp_U_bytes);
       env->BitBlt(frame->GetWritePtr(PLANAR_U), frame->GetPitch(PLANAR_U),
-                  t->dst, uv_pitch, frame->GetRowSize(PLANAR_U), frame->GetHeight(PLANAR_U));
-      if (!t->inplace) _aligned_free(t->dst);
+                  srcp, uv_pitch, frame->GetRowSize(PLANAR_U), frame->GetHeight(PLANAR_U));
 
-      // V
       srcp += fi->comp_U_bytes;
-      t->DeCompressImage(srcp, uv_rowsize, uv_height, uv_pitch, fi->comp_V_bytes);
       env->BitBlt(frame->GetWritePtr(PLANAR_V), frame->GetPitch(PLANAR_V),
-                  t->dst, uv_pitch, frame->GetRowSize(PLANAR_V), frame->GetHeight(PLANAR_V));
-      if (!t->inplace) _aligned_free(t->dst);
-      delete t;
+                  srcp, uv_pitch, frame->GetRowSize(PLANAR_V), frame->GetHeight(PLANAR_V));
     }
   } else {
     if (client->reply->last_reply_type == INTERNAL_DISCONNECTED)
@@ -192,6 +157,7 @@ PVideoFrame __stdcall TCPClient::GetFrame(int n, IScriptEnvironment* env) {
     _RPT1(0, "TCPClient: PreRequesting frame frame %d.\n", f.n);
   }
 
+  LeaveCriticalSection(&requestCriticalSection);
   return frame;
 }
 
@@ -201,6 +167,7 @@ void __stdcall TCPClient::GetAudio(void* buf, __int64 start, __int64 count, IScr
   if (!vi.HasAudio())
     return ;
 
+  EnterCriticalSection(&requestCriticalSection);
   ClientRequestAudio a;
   memset(&a, 0 , sizeof(ClientRequestAudio));
   a.start = start;
@@ -225,12 +192,14 @@ void __stdcall TCPClient::GetAudio(void* buf, __int64 start, __int64 count, IScr
       env->ThrowError("TCPClient: Unknown compression.");
   }
 
-  _RPT2(0, "TCPClient: Got %d of %d bytes of audio (GetAudio)\n", ai->data_size, a.bytes);
+  _RPT1(0, "TCPClient: Got %d bytes of audio (GetAudio)\n", ai->compressed_bytes);
   memcpy(buf, client->reply->last_reply + sizeof(ServerAudioInfo), ai->data_size);
+  LeaveCriticalSection(&requestCriticalSection);
 }
 
 
 bool __stdcall TCPClient::GetParity(int n) {
+  EnterCriticalSection(&requestCriticalSection);
   ClientRequestParity c;
   memset(&c, 0, sizeof(ClientRequestParity));
   c.n = n;
@@ -238,10 +207,12 @@ bool __stdcall TCPClient::GetParity(int n) {
   client->GetReply();
   if (client->reply->last_reply_type != SERVER_SENDING_PARITY) {
     _RPT0(1, "TCPClient: Did not recieve expected packet (SERVER_SENDING_PARITY)");
+    LeaveCriticalSection(&requestCriticalSection);
     return false;
   }
   ServerParityReply* p = (ServerParityReply *)client->reply->last_reply;
   _RPT0(0, "TCPClient: Got parity information.\n");
+  LeaveCriticalSection(&requestCriticalSection);
   return !!p->parity;
 }
 
@@ -254,7 +225,6 @@ TCPClient::~TCPClient() {
   while (client->thread_running) {
     Sleep(10);
   }
-  client->CleanUp();
   delete client;
   _RPT0(0, "TCPClient: Thread killed.\n");
 
@@ -263,42 +233,33 @@ TCPClient::~TCPClient() {
 
 AVSValue __cdecl Create_TCPClient(AVSValue args, void* user_data, IScriptEnvironment* env) {
   const char* comp = args[2].Defined() ? args[2].AsString("") : 0;
-  return new TCPClient(args[0].AsString(), args[1].AsInt(22050), comp, env);
+  return new AlignPlanar(new TCPClient(args[0].AsString(), args[1].AsInt(22050), comp, env));
 }
 
 
 /*****************  CLIENT CODE   *******************/
 
-UINT StartClient(LPVOID p) {
+DWORD WINAPI StartClient(LPVOID p) {
   TCPClientThread* t = (TCPClientThread*)p;
   t->StartRequestLoop();
   return 0;
 }
 
 
-TCPClientThread::TCPClientThread(const char* hostname, int port, const char* compression, IScriptEnvironment* env) {
+TCPClientThread::TCPClientThread(const char* hostname, int port, const char* compression, IScriptEnvironment* _env): env(_env) {
   disconnect = false;
   data_waiting = false;
   thread_running = false;
   client_request = 0;
-
-  int iResult = WSAStartup( MAKEWORD(2, 2), &wsaData );
-  if ( iResult != NO_ERROR )
-    env->ThrowError("TCPClient: Could not start up Winsock.");
-
-  hostent* host_info = gethostbyname(hostname);
-  if (!host_info || !host_info->h_addr_list) {
-    if (WSAGetLastError() == WSAHOST_NOT_FOUND)
-      env->ThrowError("TCPClient: gethostbyname(\"%s\") - Host not found.", hostname);
-    else
-      env->ThrowError("TCPClient: gethostbyname(\"%s\") - error=%d", hostname, WSAGetLastError());
-  }
-
   reply = new ServerToClientReply();
 
   evtClientReadyForRequest = ::CreateEvent (NULL, FALSE, FALSE, NULL);
   evtClientReplyReady = ::CreateEvent (NULL, FALSE, FALSE, NULL);
   evtClientProcesRequest = ::CreateEvent (NULL, FALSE, FALSE, NULL);
+
+  int iResult = WSAStartup( MAKEWORD(2, 2), &wsaData );
+  if ( iResult != NO_ERROR )
+    env->ThrowError("TCPClient: Could not start up Winsock.");
 
   m_socket = socket( AF_INET, SOCK_STREAM, IPPROTO_TCP );
 
@@ -307,10 +268,6 @@ TCPClientThread::TCPClientThread(const char* hostname, int port, const char* com
     WSACleanup();
     return ;
   }
-
-  char* host_ip = *(host_info->h_addr_list);
-  unsigned long addr = *(unsigned long*)(host_ip);
-
   const static int sendbufsize = 1024; // Small send size
   const static int rcvbufsize = 262144;   // Maximum rcv size
 
@@ -319,7 +276,7 @@ TCPClientThread::TCPClientThread(const char* hostname, int port, const char* com
 
   // Set up the sockaddr structure
   service.sin_family = AF_INET;
-  service.sin_addr.s_addr = addr;
+  service.sin_addr.s_addr = inet_addr(hostname);
   service.sin_port = htons(port);
 
   if ( connect( m_socket, (SOCKADDR*) &service, sizeof(service) ) == SOCKET_ERROR) {
@@ -332,7 +289,9 @@ TCPClientThread::TCPClientThread(const char* hostname, int port, const char* com
   int one = 1;         // for 4.3 BSD style setsockopt()
   setsockopt(m_socket, IPPROTO_TCP, TCP_NODELAY, (PCHAR )&one, sizeof(one));
 
-  AfxBeginThread(StartClient, this , THREAD_PRIORITY_ABOVE_NORMAL, 0, 0, NULL);
+//  AfxBeginThread(StartClient, this , THREAD_PRIORITY_ABOVE_NORMAL, 0, 0, NULL);
+  HANDLE h = CreateThread(NULL,NULL,StartClient,this, NULL,NULL);
+  SetThreadPriority(h,THREAD_PRIORITY_ABOVE_NORMAL);
 
   thread_running = true;
 
@@ -341,6 +300,7 @@ TCPClientThread::TCPClientThread(const char* hostname, int port, const char* com
   ccv.minor = TCPDELIVER_MINOR;
   ccv.compression_supported = ServerFrameInfo::COMPRESSION_DELTADOWN_LZO |
     ServerFrameInfo::COMPRESSION_DELTADOWN_HUFFMAN |
+    ServerFrameInfo::COMPRESSION_DELTADOWN_RLE |
     ServerFrameInfo::COMPRESSION_DELTADOWN_GZIP;
 
   if (compression) {  // Override compression if specified.
@@ -352,6 +312,8 @@ TCPClientThread::TCPClientThread(const char* hostname, int port, const char* com
       ccv.compression_supported = ServerFrameInfo::COMPRESSION_DELTADOWN_HUFFMAN;
     } else if (!lstrcmpi(compression, "gzip")) {
       ccv.compression_supported = ServerFrameInfo::COMPRESSION_DELTADOWN_GZIP;
+    } else if (!lstrcmpi(compression, "rle")) {
+      ccv.compression_supported = ServerFrameInfo::COMPRESSION_DELTADOWN_RLE;
     } else {
       env->ThrowError("TCPSource: Unknown Compression type specified.");
     }
@@ -438,7 +400,7 @@ void TCPClientThread::PushReply() {
 
 void TCPClientThread::PopReply() {
   if (reply->pushed_reply) {
-    delete[] reply->last_reply;
+    _aligned_free(reply->last_reply);
     ServerToClientReply* STCRpushed = reply->pushed_reply;
     delete reply;
     reply = STCRpushed;
@@ -463,7 +425,8 @@ void TCPClientThread::StartRequestLoop() {
 
     _RPT0(0, "TCPClient: Processing request.\n");
 
-    delete[] reply->last_reply;
+    if (reply->last_reply)
+      _aligned_free(reply->last_reply);
     reply->last_reply = 0;
     reply->last_reply_bytes = 0;
     reply->last_reply_type = 0;
@@ -481,6 +444,9 @@ void TCPClientThread::StartRequestLoop() {
     }
     _RPT0(0, "TCPClient: Returning reply.\n");
 
+    if (reply->last_reply_type == REQUEST_DISCONNECT) {
+        reply->last_reply_type = INTERNAL_DISCONNECTED;
+    }
     if (disconnect) {
       reply->last_reply_type = INTERNAL_DISCONNECTED;
     }
@@ -492,6 +458,7 @@ void TCPClientThread::StartRequestLoop() {
   CloseHandle(evtClientReplyReady);
   CloseHandle(evtClientReadyForRequest);
 
+  CleanUp();
   closesocket(m_socket);
   WSACleanup();
 
@@ -507,11 +474,11 @@ void TCPClientThread::CleanUp() {
 
   if (reply->pushed_reply) {
     if (reply->pushed_reply->last_reply_bytes)
-      delete[] reply->pushed_reply->last_reply;
+      _aligned_free(reply->pushed_reply->last_reply);
   }
 
   if (reply->last_reply_bytes)
-    delete[] reply->last_reply;
+    _aligned_free(reply->pushed_reply->last_reply);
 
   delete reply;
 }
@@ -531,7 +498,7 @@ void TCPClientThread::RecievePacket() {
 
   _RPT1(0, "TCPClient: Got packet, of %d bytes\n", dataSize);
 
-  char* data = new char[dataSize];
+  char* data = (char*)_aligned_malloc(dataSize,16);
   recieved = 0;
 
   fd_set test_set;
@@ -553,10 +520,93 @@ void TCPClientThread::RecievePacket() {
       recieved += bytesRecv;
     }
   }
-  reply->last_reply = new char[dataSize - 1];  // Freed in StartRequestLoop
   reply->last_reply_bytes = dataSize - 1;
   reply->last_reply_type = data[0];
-  memcpy(reply->last_reply, &data[1], reply->last_reply_bytes);
-  delete[] data;
+  reply->last_reply = &data[1];
+  bool uncompressed = true;
+  if (reply->last_reply_type == SERVER_SENDING_FRAME) {  // We are inlining decompression so it is done in a separate thread from frame requests and avoid a bitblit.
+    ServerFrameInfo* fi = (ServerFrameInfo *)&data[1];
+    if (fi->compression != fi->COMPRESSION_NONE) {
+      uncompressed = false;
+      reply->last_reply = (char*)_aligned_malloc(fi->data_size + sizeof(ServerFrameInfo),64);  // Freed in StartRequestLoop
+      memcpy(reply->last_reply, fi, sizeof(ServerFrameInfo));
+      fi = (ServerFrameInfo *)reply->last_reply;
+
+      fi = (ServerFrameInfo *)reply->last_reply;
+      BYTE* dstp = (unsigned char*)reply->last_reply + sizeof(ServerFrameInfo);
+      BYTE* srcp = (unsigned char*)&data[1] + sizeof(ServerFrameInfo);
+      TCPCompression* t = 0;
+
+      switch (fi->compression) {
+        case ServerFrameInfo::COMPRESSION_DELTADOWN_LZO: {
+            t = (TCPCompression*)new PredictDownLZO();
+            break;
+          }
+        case ServerFrameInfo::COMPRESSION_DELTADOWN_HUFFMAN: {
+            t = (TCPCompression*)new PredictDownHuffman();
+            break;
+          }
+        case ServerFrameInfo::COMPRESSION_DELTADOWN_GZIP: {
+            t = (TCPCompression*)new PredictDownGZip();
+            break;
+          }
+        case ServerFrameInfo::COMPRESSION_DELTADOWN_RLE: {
+            t = (TCPCompression*)new PredictDownRLE();
+            break;
+          }
+        default:
+        _RPT0(0, "TCPClient: Could not not find appropriate decompressor!\n");
+        disconnect = true;
+        return ;
+      }
+      if (!fi->comp_U_bytes) { // If only one plane
+        t->DeCompressImage(srcp, fi->row_size, fi->height, fi->pitch, fi->compressed_bytes, dstp);
+        env->BitBlt(dstp, fi->pitch, t->dst, fi->pitch, fi->row_size, fi->height);
+        if (!t->inplace) {
+          _aligned_free(t->dst);
+        }
+        fi->compressed_bytes = fi->height * fi->pitch;
+      } else {
+        // Y
+        t->DeCompressImage(srcp, fi->row_size, fi->height, fi->pitch, fi->comp_Y_bytes, dstp);
+        if (!t->inplace) {
+          env->BitBlt(dstp, fi->pitch, t->dst, fi->pitch, fi->row_size, fi->height);
+          _aligned_free(t->dst);
+        }
+        int uv_pitch = fi->pitchUV;
+        int uv_rowsize  = fi->row_sizeUV;
+        int uv_height = fi->heightUV;
+
+        // U
+        srcp += fi->comp_Y_bytes;
+        dstp += fi->height * fi->pitch;
+        t->DeCompressImage(srcp, uv_rowsize, uv_height, uv_pitch, fi->comp_U_bytes, dstp);
+        if (!t->inplace) {
+          env->BitBlt(dstp, uv_pitch, t->dst, uv_pitch, uv_rowsize, uv_height);
+          _aligned_free(t->dst);
+        }
+
+        // V
+        srcp += fi->comp_U_bytes;
+        dstp += uv_height * uv_pitch;
+        t->DeCompressImage(srcp, uv_rowsize, uv_height, uv_pitch, fi->comp_V_bytes, dstp);
+        if (!t->inplace) {
+          env->BitBlt(dstp, uv_pitch, t->dst, uv_pitch, uv_rowsize, uv_height);
+          _aligned_free(t->dst);
+        }
+
+        fi->comp_Y_bytes = fi->height * fi->pitch;
+        fi->comp_U_bytes = uv_height * uv_pitch;
+        fi->comp_V_bytes = uv_height * uv_pitch;
+      }// End if planar
+      delete t;
+    } // End if uncompressed
+  } // End if not frame
+
+  if (uncompressed) {
+    reply->last_reply = (char*)_aligned_malloc(dataSize - 1, 16);  // Freed in StartRequestLoop
+    memcpy(reply->last_reply, &data[1], reply->last_reply_bytes);
+  }
+  _aligned_free(data);
 }
 

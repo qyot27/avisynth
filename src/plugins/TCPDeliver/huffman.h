@@ -3,9 +3,8 @@
 * Author:      Marcus Geelnard
 * Description: Huffman coder/decoder interface.
 * Reentrant:   Yes
-* $Id: huffman.h,v 1.1 2004/07/23 13:04:28 sh0dan Exp $
 *-------------------------------------------------------------------------
-* Copyright (c) 2003-2004 Marcus Geelnard
+* Copyright (c) 2003-2006 Marcus Geelnard
 *
 * This software is provided 'as-is', without any express or implied
 * warranty. In no event will the authors be held liable for any damages

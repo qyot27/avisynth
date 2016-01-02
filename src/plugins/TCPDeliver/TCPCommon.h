@@ -37,8 +37,8 @@
 #ifndef TCP_Common_h
 #define TCP_Common_h
 
-#define TCPDELIVER_MAJOR 3
-#define TCPDELIVER_MINOR 2
+#define TCPDELIVER_MAJOR 4
+#define TCPDELIVER_MINOR 1
 
 #include "stdafx.h"
 
@@ -125,8 +125,10 @@ struct ServerFrameInfo {
   enum {
     COMPRESSION_NONE = 0,         // The image is sent as uncompressed bytes.
     COMPRESSION_DELTADOWN_LZO = 1<<0,    // The image is sent as downwards-delta + lzo compressed data.
-    COMPRESSION_DELTADOWN_HUFFMAN = 1<<1, // The image is sent as downwards-delta + huffman compressed.
-    COMPRESSION_DELTADOWN_GZIP = 1<<2 // The image is sent as downwards-delta + GZip huffman compressed.
+    // 1<<1 reserved for deprecated huffman.
+    COMPRESSION_DELTADOWN_GZIP = 1<<2, // The image is sent as downwards-delta + GZip huffman compressed.
+    COMPRESSION_DELTADOWN_HUFFMAN = 1<<3, // The image is sent as downwards-delta + huffman compressed.
+    COMPRESSION_DELTADOWN_RLE = 1<<4, // The image is sent as downwards-delta + rle compressed.
   };
 };
 
