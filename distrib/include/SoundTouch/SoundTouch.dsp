@@ -41,10 +41,8 @@ RSC=rc.exe
 # PROP Output_Dir "..\..\..\src\Release"
 # PROP Intermediate_Dir "Release"
 # PROP Target_Dir ""
-F90=df.exe
-MTL=midl.exe
 # ADD BASE CPP /nologo /W4 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /YX /FD /c
-# ADD CPP /nologo /G6 /MD /W4 /GX /Zi /O2 /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /FR /FD /c
+# ADD CPP /nologo /MD /W3 /GX /O2 /Ob2 /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /FR /FD /c
 # SUBTRACT CPP /YX
 # ADD BASE RSC /l 0x40b /d "NDEBUG"
 # ADD RSC /l 0x409 /d "NDEBUG"
@@ -67,10 +65,8 @@ LIB32=link.exe -lib
 # PROP Output_Dir "..\..\..\src\Debug"
 # PROP Intermediate_Dir "Debug"
 # PROP Target_Dir ""
-F90=df.exe
-MTL=midl.exe
 # ADD BASE CPP /nologo /W4 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /YX /FD /GZ /c
-# ADD CPP /nologo /G6 /MDd /W4 /Gm /Gi /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /FR /FD /I /GZ /c
+# ADD CPP /nologo /MDd /W4 /Gm /Gi /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /FR /FD /GZ /c
 # SUBTRACT CPP /YX
 # ADD BASE RSC /l 0x40b /d "_DEBUG"
 # ADD RSC /l 0x409 /d "_DEBUG"
@@ -93,11 +89,8 @@ LIB32=link.exe -lib
 # PROP Output_Dir "..\..\..\src\Relsym"
 # PROP Intermediate_Dir "Relsym"
 # PROP Target_Dir ""
-F90=df.exe
-MTL=midl.exe
-# ADD BASE CPP /nologo /G6 /MD /W4 /GX /Zi /O2 /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /FR /FD /c
-# SUBTRACT BASE CPP /YX
-# ADD CPP /nologo /G6 /MD /W4 /GX /Zi /O2 /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /FAs /FR /FD /c
+# ADD BASE CPP /nologo /W4 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /YX /FD /c
+# ADD CPP /nologo /MD /W4 /GX /Zi /O2 /Ob2 /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /FAs /FR /FD /c
 # SUBTRACT CPP /YX
 # ADD BASE RSC /l 0x409 /d "NDEBUG"
 # ADD RSC /l 0x409 /d "NDEBUG"

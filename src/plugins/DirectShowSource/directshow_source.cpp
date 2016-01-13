@@ -35,7 +35,7 @@
 
 #include "directshow_source.h"
 
-#define DSS_VERSION "2.6.0"
+#define DSS_VERSION "2.6.1"
 
 /************************************
  *          Logging Utility         *
@@ -98,6 +98,7 @@ char* Tick() {
   tick %= 99;
 
   _snprintf(buf, 15, "%02u:%02u:%02u.%03u", tick, min, sec, msec);
+  buf[15] = 0;
 
   return buf;
 }
@@ -135,7 +136,9 @@ const GUID MEDIASUBTYPE_extensible = {0x0000FFFE, 0x0000, 0x0010, {0x80, 0x00, 0
                       (((DWORD)(ch4) & 0xFF000000) >> 24) )
 
 const GUID MEDIASUBTYPE_I420 = {FourCC('I420'), 0x0000, 0x0010, {0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71}};
+#if _MSC_VER <= 1200
 const GUID MEDIASUBTYPE_NV12 = {FourCC('NV12'), 0x0000, 0x0010, {0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71}};
+#endif
 const GUID MEDIASUBTYPE_YV16 = {FourCC('YV16'), 0x0000, 0x0010, {0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71}};
 const GUID MEDIASUBTYPE_YV24 = {FourCC('YV24'), 0x0000, 0x0010, {0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71}};
 
@@ -152,7 +155,7 @@ char* PrintGUID(const GUID *g) {
     buf[40] = 0;
   }
   else {
-    lstrcpy(buf, "<null>");
+    strcpy(buf, "<null>");
   }
   return buf;
 }
@@ -2494,9 +2497,10 @@ void DirectShowSource::CheckHresult(IScriptEnvironment* env, HRESULT hr, const c
   if (SUCCEEDED(hr)) return;
 //  char buf[1024] = {0};
 //  if (!FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM, NULL, hr, 0, buf, 1024, NULL))
-  char buf[MAX_ERROR_TEXT_LEN] = {0};
+  char buf[MAX_ERROR_TEXT_LEN+1] = {0};
   if (!AMGetErrorText(hr, buf, MAX_ERROR_TEXT_LEN))
-    wsprintf(buf, "error code 0x%x", hr);
+    _snprintf(buf, MAX_ERROR_TEXT_LEN, "error code 0x%x", hr);
+  buf[MAX_ERROR_TEXT_LEN] = 0;
   env->ThrowError("DirectShowSource: %s%s:\n%s", msg, msg2, buf);
 }
 

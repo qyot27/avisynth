@@ -81,7 +81,7 @@ nmake
 
 # Add DirectShow and DirectX to link command line LIB path
 /LIBPATH:"C:\Program Files\Microsoft Platform SDK for Windows Server 2003 R2\Samples\Multimedia\DirectShow\BaseClasses\XP32_RETAIL"
-/LIBPATH:"C:\Program\Microsoft DirectX SDK (August 2009)\Lib\x86"
+/LIBPATH:"C:\Program Files\Microsoft DirectX SDK (August 2009)\Lib\x86"
 
 /LIBPATH:"C:\Program Files (x86)\Microsoft DirectX SDK (August 2009)\Lib\x86"
 

@@ -44,18 +44,17 @@ RSC=rc.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MT /W4 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "AVISYNTH_EXPORTS" /YX /FD /c
-# ADD CPP /nologo /G6 /MD /W4 /GX /Zd /O2 /Op /Ob2 /D "NDEBUG" /D "INC_OLE2" /D "STRICT" /D "WIN32" /D "_WIN32" /D "_MT" /D "_DLL" /D "_MBCS" /D "_USRDLL" /D "AVISYNTH_C_EXPORTS" /D "AVISYNTH_CORE" /Fr /Yu"stdafx.h" /FD /Gs /GF /c
+# ADD CPP /nologo /MD /W4 /GX /O2 /Ob2 /D "NDEBUG" /D "INC_OLE2" /D "STRICT" /D "WIN32" /D "_WIN32" /D "_MT" /D "_DLL" /D "_MBCS" /D "_USRDLL" /D "AVISYNTH_C_EXPORTS" /D "AVISYNTH_CORE" /FR /Yu"stdafx.h" /FD /Gs /GF /c
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x409 /d "NDEBUG"
-# ADD RSC /l 0x409 /d "NDEBUG"
+# ADD RSC /l 0x409 /d "NDEBUG" /d "USE_MFC"
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /machine:I386
-# ADD LINK32 ../distrib/lib/DevIL.lib $(IntDir)/SoundTouch.lib $(IntDir)/pfc.lib $(IntDir)/softwire.lib msacm32.lib vfw32.lib kernel32.lib advapi32.lib version.lib user32.lib gdi32.lib ole32.lib uuid.lib winmm.lib oleaut32.lib /nologo /dll /map /machine:I386 /nodefaultlib:"LIBC"
-# SUBTRACT LINK32 /pdb:none /debug
+# ADD LINK32 ../distrib/lib/DevIL.lib Delayimp.lib msacm32.lib vfw32.lib advapi32.lib user32.lib gdi32.lib ole32.lib winmm.lib /nologo /version:2.61 /dll /map /machine:I386 /nodefaultlib:"OLDNAMES" /nodefaultlib:"msvcprt.lib" /delayload:DevIL.dll
 # Begin Custom Build
 InputPath=.\Release\avisynth.dll
 SOURCE="$(InputPath)"
@@ -84,18 +83,17 @@ PostBuild_Cmds=copy ..\distrib\bin\devil.dll $(SystemRoot)\system32
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MTd /W4 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "AVISYNTH_EXPORTS" /YX /FD /GZ /c
-# ADD CPP /nologo /G6 /MDd /W4 /Gm /GX /ZI /Od /D "IL_DEBUG" /D "_DEBUG" /D "DEBUG" /D "INC_OLE2" /D "STRICT" /D "WIN32" /D "_WIN32" /D "_MT" /D "_DLL" /D "_MBCS" /D "_USRDLL" /D "AVISYNTH_C_EXPORTS" /D "AVISYNTH_CORE" /Fr /Yu"stdafx.h" /FD /GZ /GF /c
+# ADD CPP /nologo /MDd /W4 /Gm /GX /ZI /Od /D "_DEBUG" /D "DEBUG" /D "INC_OLE2" /D "STRICT" /D "WIN32" /D "_WIN32" /D "_MT" /D "_DLL" /D "_MBCS" /D "_USRDLL" /D "AVISYNTH_C_EXPORTS" /D "AVISYNTH_CORE" /FR /Yu"stdafx.h" /FD /GZ /GF /c
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x409 /d "_DEBUG"
-# ADD RSC /l 0x409 /d "_DEBUG"
+# ADD RSC /l 0x409 /d "_DEBUG" /d "USE_MFC"
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 ../distrib/lib/DevIL.lib $(IntDir)/SoundTouch.lib $(IntDir)/pfc.lib $(IntDir)/softwire.lib msacm32.lib vfw32.lib kernel32.lib advapi32.lib version.lib user32.lib gdi32.lib ole32.lib uuid.lib winmm.lib oleaut32.lib /nologo /dll /map /debug /machine:I386 /nodefaultlib:"LIBC" /pdbtype:sept
-# SUBTRACT LINK32 /pdb:none /incremental:no /nodefaultlib
+# ADD LINK32 ../distrib/lib/DevIL.lib Delayimp.lib msacm32.lib vfw32.lib advapi32.lib user32.lib gdi32.lib ole32.lib winmm.lib /nologo /version:2.61 /dll /map /debug /machine:I386 /nodefaultlib:"OLDNAMES" /nodefaultlib:"msvcprtd" /pdbtype:sept /delayload:DevIL.dll
 # Begin Special Build Tool
 SOURCE="$(InputPath)"
 PostBuild_Cmds=copy Debug\avisynth.dll $(SystemRoot)\system32	copy ..\distrib\bin\devil.dll $(SystemRoot)\system32
@@ -115,20 +113,21 @@ PostBuild_Cmds=copy Debug\avisynth.dll $(SystemRoot)\system32	copy ..\distrib\bi
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MT /W4 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "AVISYNTH_EXPORTS" /YX /FD /c
-# ADD CPP /G6 /MD /W4 /GX /Zd /O2 /Op /Ob2 /D "NDEBUG" /D "INC_OLE2" /D "STRICT" /D "WIN32" /D "_WIN32" /D "_MT" /D "_DLL" /D "_MBCS" /D "_USRDLL" /D "AVISYNTH_C_EXPORTS" /D "AVISYNTH_CORE" /FAs /FR /Yu"stdafx.h" /FD /Gs /GF /c
-# SUBTRACT CPP /nologo
+# ADD CPP /nologo /MD /W4 /GX /Zi /O2 /Ob2 /D "NDEBUG" /D "INC_OLE2" /D "STRICT" /D "WIN32" /D "_WIN32" /D "_MT" /D "_DLL" /D "_MBCS" /D "_USRDLL" /D "AVISYNTH_C_EXPORTS" /D "AVISYNTH_CORE" /FAs /FR /Yu"stdafx.h" /FD /Gs /GF /c
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
-# ADD MTL /D "NDEBUG" /mktyplib203 /win32
-# SUBTRACT MTL /nologo
+# ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x409 /d "NDEBUG"
-# ADD RSC /l 0x409 /d "NDEBUG"
+# ADD RSC /l 0x409 /d "NDEBUG" /d "USE_MFC"
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /machine:I386
-# ADD LINK32 ../distrib/lib/DevIL.lib $(IntDir)/SoundTouch.lib $(IntDir)/pfc.lib $(IntDir)/softwire.lib msacm32.lib vfw32.lib kernel32.lib advapi32.lib version.lib user32.lib gdi32.lib ole32.lib uuid.lib winmm.lib oleaut32.lib /nologo /dll /map /debug /debugtype:both /machine:I386 /nodefaultlib:"LIBC"
-# SUBTRACT LINK32 /pdb:none
+# ADD LINK32 ../distrib/lib/DevIL.lib Delayimp.lib msacm32.lib vfw32.lib advapi32.lib user32.lib gdi32.lib ole32.lib winmm.lib /nologo /version:2.61 /verbose /dll /map /debug /debugtype:both /machine:I386 /nodefaultlib:"OLDNAMES" /nodefaultlib:"msvcprt.lib" /pdbtype:sept /delayload:DevIL.dll
+# Begin Special Build Tool
+SOURCE="$(InputPath)"
+PostBuild_Cmds=copy RelSym\avisynth.dll $(SystemRoot)\system32	copy ..\distrib\bin\devil.dll $(SystemRoot)\system32
+# End Special Build Tool
 
 !ENDIF 
 
