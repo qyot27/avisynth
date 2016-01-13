@@ -786,7 +786,7 @@ ShowSMPTE::ShowSMPTE(PClip _child, double _rate, const char* offset, int _offset
     rate = 120;
     dropframe = true;
   } 
-  else if (abs(_rate - rate) > 0.001) {
+  else if (fabs(_rate - rate) > 0.001) {
     env->ThrowError("ShowSMPTE: rate argument must be 23.976, 29.97 or an integer");
   }
 
@@ -899,6 +899,7 @@ PVideoFrame __stdcall ShowSMPTE::GetFrame(int n, IScriptEnvironment* env)
 
 AVSValue __cdecl ShowSMPTE::CreateSMTPE(AVSValue args, void*, IScriptEnvironment* env)
 {
+	try {	// HIDE DAMN SEH COMPILER BUG!!!
   PClip clip = args[0].AsClip();
   double def_rate = (double)args[0].AsClip()->GetVideoInfo().fps_numerator / args[0].AsClip()->GetVideoInfo().fps_denominator;
   double dfrate = args[1].AsDblDef(def_rate);
@@ -915,6 +916,8 @@ AVSValue __cdecl ShowSMPTE::CreateSMTPE(AVSValue args, void*, IScriptEnvironment
   const int font_width = int(args[10].AsFloat(0)*8+0.5);
   const int font_angle = int(args[11].AsFloat(0)*10+0.5);
   return new ShowSMPTE(clip, dfrate, offset, offset_f, x, y, font, size, text_color, halo_color, font_width, font_angle, env);
+	}
+	catch (...) { throw; }
 }
 
 AVSValue __cdecl ShowSMPTE::CreateTime(AVSValue args, void*, IScriptEnvironment* env)
