@@ -60,6 +60,18 @@ CRITICAL_SECTION FramesCriticalSection;
 volatile long refcount = 0;
 volatile ILint DevIL_Version = 0;
 
+
+ILint _ilGetInteger(ILenum Mode) { // deferred dll load exception protected
+
+  __try {
+    return ilGetInteger(Mode);
+  }
+  __except(EXCEPTION_EXECUTE_HANDLER) {
+    return 0;
+  }
+}
+
+
 static char* GetWorkingDir(char* buf, size_t bufSize)
 {
     assert(buf != NULL);
@@ -94,6 +106,9 @@ ImageWriter::ImageWriter(PClip _child, const char * _base_name, const int _start
                          const char * _ext, bool _info, IScriptEnvironment* env)
  : GenericVideoFilter(_child), ext(_ext), info(_info)
 {
+  if (DevIL_Version == 0) // Init the DevIL.dll version
+    DevIL_Version = _ilGetInteger(IL_VERSION_NUM); // deferred dll load exception protected
+
   // Generate full name
   if (IsAbsolutePath(_base_name))
   {
@@ -138,6 +153,9 @@ ImageWriter::ImageWriter(PClip _child, const char * _base_name, const int _start
   else {
     if (!(vi.IsY8()||vi.IsRGB()))
       env->ThrowError("ImageWriter: DevIL requires RGB or Y8 input");
+
+    if (!DevIL_Version)
+      env->ThrowError("ImageWriter: DevIL.dll is not available!");
 
     if (InterlockedIncrement(&refcount) == 1) {
       if (!InitializeCriticalSectionAndSpinCount(&FramesCriticalSection, 1000) ) {
@@ -292,7 +310,7 @@ PVideoFrame ImageWriter::GetFrame(int n, IScriptEnvironment* env)
     {
       ostringstream ss;
       ss << "ImageWriter: error '" << getErrStr(err) << "' in DevIL library\n"
-	        "writing file \"" << filename << "\"\n"
+            "writing file \"" << filename << "\"\n"
             "DevIL version " << DevIL_Version << ".";
       env->MakeWritable(&frame);
       env->ApplyMessage(&frame, vi, ss.str().c_str(), vi.width/4, TEXT_COLOR, 0, 0);
@@ -348,7 +366,7 @@ ImageReader::ImageReader(const char * _base_name, const int _start, const int _e
  : start(_start), use_DevIL(_use_DevIL), info(_info), animation(_animation), framecopies(0)
 {
   if (DevIL_Version == 0) // Init the DevIL.dll version
-    DevIL_Version = ilGetInteger(IL_VERSION_NUM);
+    DevIL_Version = _ilGetInteger(IL_VERSION_NUM); // deferred dll load exception protected
 
   // Generate full name
   if (IsAbsolutePath(_base_name))
@@ -451,6 +469,9 @@ ImageReader::ImageReader(const char * _base_name, const int _start, const int _e
   }
 
   if (use_DevIL == true) {  // attempt to open via DevIL
+
+    if (!DevIL_Version)
+      env->ThrowError("ImageReader: DevIL.dll is not available!");
 
     if (InterlockedIncrement(&refcount) == 1) {
       if (!InitializeCriticalSectionAndSpinCount(&FramesCriticalSection, 1000) ) {
@@ -603,7 +624,7 @@ PVideoFrame ImageReader::GetFrame(int n, IScriptEnvironment* env)
       if ((info) || (err != IL_COULD_NOT_OPEN_FILE)) {
         ostringstream ss;
         ss << "ImageReader: error '" << getErrStr(err) << "' in DevIL library\n"
-		      "opening file \"" << filename << "\"\n"
+              "opening file \"" << filename << "\"\n"
               "DevIL version " << DevIL_Version << ".";
         env->ApplyMessage(&frame, vi, ss.str().c_str(), vi.width/4, TEXT_COLOR, 0, 0);
       }
@@ -717,6 +738,15 @@ PVideoFrame ImageReader::GetFrame(int n, IScriptEnvironment* env)
       env->ApplyMessage(&frame, vi, ss.str().c_str(), vi.width/4, TEXT_COLOR, 0, 0);
       return frame;
     }
+
+    if (info) {
+      // overlay on video output: progress indicator
+      ostringstream text;
+      text << "Frame " << n << ".\n"
+              "Read from \"" << filename << "\"\n"
+              "DevIL version " << DevIL_Version << ".";
+      env->ApplyMessage(&frame, vi, text.str().c_str(), vi.width/4, TEXT_COLOR, 0, 0);
+    }
   }
   else {  /* treat as ebmp  */
     // Open file, ensure it has the expected properties
@@ -754,15 +784,14 @@ PVideoFrame ImageReader::GetFrame(int n, IScriptEnvironment* env)
     }
 
     file.close();
-  }
 
-  if (info) {
-    // overlay on video output: progress indicator
-    ostringstream text;
-    text << "Frame " << n << ".\n"
-            "Read from \"" << filename << "\"\n"
-            "DevIL version " << DevIL_Version << ".";
-    env->ApplyMessage(&frame, vi, text.str().c_str(), vi.width/4, TEXT_COLOR, 0, 0);
+    if (info) {
+      // overlay on video output: progress indicator
+      ostringstream text;
+      text << "Frame " << n << ".\n"
+              "Read from \"" << filename << "\"";
+      env->ApplyMessage(&frame, vi, text.str().c_str(), vi.width/4, TEXT_COLOR, 0, 0);
+    }
   }
 
   return frame;
@@ -874,6 +903,7 @@ bool ImageReader::checkProperties(ifstream & file, PVideoFrame & frame, IScriptE
 
 AVSValue __cdecl ImageReader::Create(AVSValue args, void*, IScriptEnvironment* env)
 {
+	try {	// HIDE DAMN SEH COMPILER BUG!!!
   const char * path = args[0].AsString("c:\\%06d.ebmp");
 
   ImageReader *IR = new ImageReader(path, args[1].AsInt(0), args[2].AsInt(1000), args[3].AsDblDef(24.0),
@@ -889,6 +919,8 @@ AVSValue __cdecl ImageReader::Create(AVSValue args, void*, IScriptEnvironment* e
 
   return IR;
 
+	}
+	catch (...) { throw; }
 }
 
 AVSValue __cdecl ImageReader::CreateAnimated(AVSValue args, void*, IScriptEnvironment* env)
