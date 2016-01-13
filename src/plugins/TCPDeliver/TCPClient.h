@@ -39,11 +39,11 @@
 #define TCP_Client_h
 
 
-//#include <afxmt.h>
-#include "TCPCommon.h"
-#include <winsock2.h>
-#include "avisynth.h"
-#include "TCPCompression.h"
+// #include <afxmt.h>
+// #include "TCPCommon.h"
+// #include <winsock2.h>
+// #include "avisynth.h"
+// #include "TCPCompression.h"
 
 AVSValue __cdecl Create_TCPClient(AVSValue args, void* user_data, IScriptEnvironment* env);
 
@@ -61,7 +61,7 @@ public:
 
 class TCPClientThread {
 public:
-  TCPClientThread(const char* pass_server_name, int pass_port, const char* compression, IScriptEnvironment* env);
+  TCPClientThread(const char* pass_server_name, u_short pass_port, const char* compression, IScriptEnvironment* env);
   void StartRequestLoop();
   // Interfaces for unthreaded communication.
   void SendRequest(char requestId, void* data, unsigned int bytes);
@@ -93,18 +93,18 @@ DWORD WINAPI StartClient(LPVOID p);
 
 class TCPClient  : public IClip {
 public:
-  TCPClient(const char* _hostname, int _port, const char* compression, IScriptEnvironment* env);
+  TCPClient(const char* _hostname, u_short _port, const char* compression, IScriptEnvironment* env);
   ~TCPClient();
   PVideoFrame __stdcall GetFrame(int n, IScriptEnvironment* env);
   void __stdcall GetAudio(void* buf, __int64 start, __int64 count, IScriptEnvironment* env);
   const VideoInfo& __stdcall GetVideoInfo();
   bool __stdcall GetParity(int n);
-  void __stdcall SetCacheHints(int cachehints,int frame_range) { } ;
+  int __stdcall SetCacheHints(int /*cachehints*/, int /*frame_range*/) { return 0; } ;
 
   TCPClientThread* client;
 private:
   const char* hostname;
-  int port;
+  u_short port;
   VideoInfo vi;
   HANDLE ClientThread;
   bool frame_requested;

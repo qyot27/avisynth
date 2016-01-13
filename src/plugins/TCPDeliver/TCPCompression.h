@@ -34,17 +34,20 @@
 #ifndef TCP_Compression_h
 #define TCP_Compression_h
 
-#define ZLIB_WINAPI
+// #include "TCPCommon.h"
+// #include "avisynth.h"
+// #include <malloc.h>
 
-#include "lzo/include/lzoconf.h"
-#include "lzo/include/lzo1x.h"
-#include "lzo/include/lzo_asm.h"
+#include "lzo/lzoconf.h"
+#include "lzo/lzo1x.h"
+#include "lzo/lzo_asm.h"
+
 #include "huffman.h"
+
 #include "rle.h"
-#include "TCPCommon.h"
-#include "avisynth.h"
-#include <malloc.h>
-#include "zlib/include/zlib.h"
+
+#define ZLIB_WINAPI
+#include "zlib/zlib.h"
 
 /*******************************************************************************
   This is a generic compression class for implementing different types of

@@ -37,12 +37,11 @@
 #ifndef TCP_Server_h
 #define TCP_Server_h
 
-
-#include "TCPCommon.h"
-#include "winsock2.h"
-#include "avisynth.h"
+// #include "TCPCommon.h"
+// #include "winsock2.h"
+// #include "avisynth.h"
 #include "resource.h"
-#include "TCPCompression.h"
+// #include "TCPCompression.h"
 
 
 AVSValue __cdecl Create_TCPServer(AVSValue args, void* user_data, IScriptEnvironment* env);
@@ -62,14 +61,14 @@ public:
     if (isDataPending)
       delete[] pendingData;
 
-}
+  }
 
- void setStatus(const char *fmt, ...) {
-  va_list val;
-  va_start(val, fmt);
-  wvsprintf(status_text, fmt, val);
-  va_end(val);
-}
+  void setStatus(const char *fmt, ...) {
+    va_list val;
+    va_start(val, fmt);
+    wvsprintf(status_text, fmt, val);
+    va_end(val);
+  }
 
   SOCKET s;
   bool isConnected;
@@ -138,11 +137,11 @@ private:
 
 class TCPServerListener {
 public:
-  TCPServerListener(int port, PClip child, IScriptEnvironment* env);
+  TCPServerListener(u_short port, PClip child, IScriptEnvironment* env, CRITICAL_SECTION *p);
+  ~TCPServerListener();
   void Listen();
   void KillThread();
   bool thread_running;
-  CRITICAL_SECTION FramesCriticalSection;
 
 private:
   void Receive(TCPRecievePacket* tr, ServerReply* s);
@@ -153,12 +152,13 @@ private:
   void SendFrameInfo(ServerReply* s, const char* request);
   void SendAudioInfo(ServerReply* s, const char* request);
   void SendParityInfo(ServerReply* s, const char* request);
-  void SendVideoFrame(ServerReply* s);
-  void SendAudioData(ServerReply* s);
+//void SendVideoFrame(ServerReply* s);
+//void SendAudioData(ServerReply* s);
   void CheckClientVersion(ServerReply* s, const char* request);
-  void SetStatus(ClientConnection* client, TCHAR *fmt, ...);
+//void SetStatus(ClientConnection* client, TCHAR *fmt, ...);
   void UpdateStatWindow(DWORD sinceLast);
 
+  CRITICAL_SECTION *pFramesCriticalSection;
   WSADATA wsaData;
   SOCKET m_socket;
   sockaddr_in service;
@@ -190,7 +190,7 @@ class TCPServerConnection {
 
 class TCPServer  : public GenericVideoFilter {
 public:
-  TCPServer(PClip _child, int port, IScriptEnvironment* env);
+  TCPServer(PClip _child, u_short port, IScriptEnvironment* env);
   ~TCPServer();
 private:
   HANDLE ServerThread;

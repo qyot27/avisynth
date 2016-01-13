@@ -34,8 +34,10 @@
 
 // TCPDeliver (c) 2004 by Klaus Post
 
-#include "TCPCommon.h"
-#include "avisynth.h"
+#include "stdafx.h"
+
+// #include "TCPCommon.h"
+// #include "avisynth.h"
 
 
 #define TCPD_DO1(buf,i)  {s1 += buf[i]; s2 += s1;}

@@ -40,7 +40,7 @@
 #define TCPDELIVER_MAJOR 4
 #define TCPDELIVER_MINOR 1
 
-#include "stdafx.h"
+// #include "stdafx.h"
 
 /*****************************************************************
  General overview:
