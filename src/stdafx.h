@@ -8,6 +8,7 @@
 //C
 #include <stdio.h>
 #include <stdlib.h>
+#include <limits.h>
 #include <math.h>
 #include <malloc.h>
 #include <string.h>
@@ -24,7 +25,7 @@
 #include <msacm.h>
 
 //STL
-#include <vector>
-#include <algorithm>
+// #include <vector>
+// #include <algorithm>
 
 #endif // __Stdafx_H__

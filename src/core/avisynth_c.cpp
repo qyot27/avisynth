@@ -9,6 +9,8 @@
 
 #include "stdafx.h"
 
+#include <new>
+
 #include "../internal.h"
 #include "avisynth_c.h"
 
