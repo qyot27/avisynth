@@ -33,10 +33,12 @@
 // import and export plugins, or graphical user interfaces.
 
 // TCPDeliver (c) 2004 by Klaus Post
-#define _WIN32_WINNT 0x0403
+
+#include "stdafx.h"
+
+// #define _WIN32_WINNT 0x0403
 
 #include "TCPClient.h"
-#include "alignplanar.h"
 
 /**************************  TCP Client *****************************
   The TCPCLient is designed as a multithreaded application.
@@ -49,10 +51,9 @@
  ********************************************************************/
 
 
-TCPClient::TCPClient(const char* _hostname, int _port, const char* compression, IScriptEnvironment* env) : hostname(_hostname), port(_port) {
-  LPDWORD ThreadId = 0;
+TCPClient::TCPClient(const char* _hostname, u_short _port, const char* compression, IScriptEnvironment* env) : hostname(_hostname), port(_port) {
 
-  if (!InitializeCriticalSectionAndSpinCount(&requestCriticalSection, 0x80000010) )
+  if (!InitializeCriticalSectionAndSpinCount(&requestCriticalSection, 0) )
     env->ThrowError("TCPClient: Could not initialize critical section");
 
   _RPT0(0, "TCPClient: Creating client object.\n");
@@ -61,9 +62,6 @@ TCPClient::TCPClient(const char* _hostname, int _port, const char* compression, 
 
   //  if(!ClientThread) ClientThread = CreateThread(NULL, 0, (unsigned long (__stdcall *)(void *))StartClient, 0, 0 , ThreadId );
 
-}
-
-const VideoInfo& TCPClient::GetVideoInfo() {
   EnterCriticalSection(&requestCriticalSection);
   if (client->IsDataPending()) {  // Ignore any pending data
     client->GetReply();  // Kill it.
@@ -79,9 +77,12 @@ const VideoInfo& TCPClient::GetVideoInfo() {
     memcpy(&vi, client->reply->last_reply, sizeof(VideoInfo));
 
   } else {
-    _RPT0(1, "TCPClient: Did not recieve expected packet (SERVER_VIDEOINFO)");
+    _RPT0(1, "TCPClient: Did not receive expected packet (SERVER_VIDEOINFO)");
   }
   LeaveCriticalSection(&requestCriticalSection);
+}
+
+const VideoInfo& TCPClient::GetVideoInfo() {
   return vi;
 }
 
@@ -89,7 +90,6 @@ const VideoInfo& TCPClient::GetVideoInfo() {
 
 PVideoFrame __stdcall TCPClient::GetFrame(int n, IScriptEnvironment* env) {
   EnterCriticalSection(&requestCriticalSection);
-  int al_b = sizeof(ClientRequestFrame);
   ClientRequestFrame f;
   memset(&f, 0 , sizeof(ClientRequestFrame));
   f.n = n;
@@ -148,14 +148,13 @@ PVideoFrame __stdcall TCPClient::GetFrame(int n, IScriptEnvironment* env) {
     if (client->reply->last_reply_type == INTERNAL_DISCONNECTED)
       env->ThrowError("TCPClient: Disconnected from server");
 
-    env->ThrowError("TCPClient: Did not recieve expected packet (SERVER_SENDING_FRAME)");
+    env->ThrowError("TCPClient: Did not receive expected packet (SERVER_SENDING_FRAME)");
   }
 
-  if (true) {  // Request next frame
-    f.n = n + 1;
-    client->SendRequest(CLIENT_REQUEST_FRAME, &f, sizeof(ClientRequestFrame));
-    _RPT1(0, "TCPClient: PreRequesting frame frame %d.\n", f.n);
-  }
+  // Request next frame
+  f.n = n + 1;
+  client->SendRequest(CLIENT_REQUEST_FRAME, &f, sizeof(ClientRequestFrame));
+  _RPT1(0, "TCPClient: PreRequesting frame frame %d.\n", f.n);
 
   LeaveCriticalSection(&requestCriticalSection);
   return frame;
@@ -180,7 +179,7 @@ void __stdcall TCPClient::GetAudio(void* buf, __int64 start, __int64 count, IScr
     if (client->reply->last_reply_type == INTERNAL_DISCONNECTED)
       env->ThrowError("TCPClient: Disconnected from server");
 
-    env->ThrowError("TCPClient: Did not recieve expected packet (SERVER_SENDING_AUDIO)");
+    env->ThrowError("TCPClient: Did not receive expected packet (SERVER_SENDING_AUDIO)");
     return ;
   }
 
@@ -206,7 +205,7 @@ bool __stdcall TCPClient::GetParity(int n) {
   client->SendRequest(CLIENT_SEND_PARITY, &c, sizeof(ClientRequestParity));
   client->GetReply();
   if (client->reply->last_reply_type != SERVER_SENDING_PARITY) {
-    _RPT0(1, "TCPClient: Did not recieve expected packet (SERVER_SENDING_PARITY)");
+    _RPT0(1, "TCPClient: Did not receive expected packet (SERVER_SENDING_PARITY)");
     LeaveCriticalSection(&requestCriticalSection);
     return false;
   }
@@ -218,7 +217,6 @@ bool __stdcall TCPClient::GetParity(int n) {
 
 
 TCPClient::~TCPClient() {
-  DWORD dwExitCode = 0;
   _RPT0(0, "TCPClient: Killing thread.\n");
   client->disconnect = true;
   client->SendRequest(REQUEST_DISCONNECT, 0, 0);
@@ -228,12 +226,13 @@ TCPClient::~TCPClient() {
   delete client;
   _RPT0(0, "TCPClient: Thread killed.\n");
 
+  DeleteCriticalSection(&requestCriticalSection);
 }
 
 
-AVSValue __cdecl Create_TCPClient(AVSValue args, void* user_data, IScriptEnvironment* env) {
+AVSValue __cdecl Create_TCPClient(AVSValue args, void* /* user_data */, IScriptEnvironment* env) {
   const char* comp = args[2].Defined() ? args[2].AsString("") : 0;
-  return new AlignPlanar(new TCPClient(args[0].AsString(), args[1].AsInt(22050), comp, env));
+  return new TCPClient(args[0].AsString(), (u_short)args[1].AsInt(22050), comp, env);
 }
 
 
@@ -246,7 +245,7 @@ DWORD WINAPI StartClient(LPVOID p) {
 }
 
 
-TCPClientThread::TCPClientThread(const char* hostname, int port, const char* compression, IScriptEnvironment* _env): env(_env) {
+TCPClientThread::TCPClientThread(const char* hostname, u_short port, const char* compression, IScriptEnvironment* _env): env(_env) {
   disconnect = false;
   data_waiting = false;
   thread_running = false;
@@ -271,6 +270,7 @@ TCPClientThread::TCPClientThread(const char* hostname, int port, const char* com
   const static int sendbufsize = 1024; // Small send size
   const static int rcvbufsize = 262144;   // Maximum rcv size
 
+  // 1K send and 256K recv buffer for server socket
   setsockopt(m_socket, SOL_SOCKET, SO_RCVBUF, (char *) &rcvbufsize, sizeof(rcvbufsize));
   setsockopt(m_socket, SOL_SOCKET, SO_SNDBUF, (char *) &sendbufsize, sizeof(sendbufsize));
 
@@ -431,11 +431,18 @@ void TCPClientThread::StartRequestLoop() {
     reply->last_reply_bytes = 0;
     reply->last_reply_type = 0;
 
-    int bytesSent = send(m_socket, client_request, client_request_bytes, 0);
-
+	int r = 0;
+    unsigned int BytesSent = 0;
+    while (!disconnect && BytesSent < client_request_bytes) {
+      r = send(m_socket, client_request+BytesSent, client_request_bytes-BytesSent, 0);
+      if (r == SOCKET_ERROR || r <= 0) {
+	    break;
+      }
+      BytesSent += r;
+    }
     _RPT0(0, "TCPClient: Request sent.\n");
 
-    if (disconnect || bytesSent == WSAECONNRESET || bytesSent == 0) {
+    if (disconnect || r == SOCKET_ERROR || r <= 0) {
       _RPT0(0, "TCPClient: Client was disconnected!");
       disconnect = true;
     } else {
@@ -444,10 +451,7 @@ void TCPClientThread::StartRequestLoop() {
     }
     _RPT0(0, "TCPClient: Returning reply.\n");
 
-    if (reply->last_reply_type == REQUEST_DISCONNECT) {
-        reply->last_reply_type = INTERNAL_DISCONNECTED;
-    }
-    if (disconnect) {
+    if (disconnect || reply->last_reply_type == REQUEST_DISCONNECT) {
       reply->last_reply_type = INTERNAL_DISCONNECTED;
     }
     SetEvent(evtClientReplyReady);  // FIXME: Could give deadlocks, if client is waiting for reply.
@@ -484,7 +488,7 @@ void TCPClientThread::CleanUp() {
 }
 
 void TCPClientThread::RecievePacket() {
-  unsigned int dataSize;
+  unsigned int dataSize = 0;
   unsigned int recieved = 0;
   while (recieved < 4) {
     int bytesRecv = recv(m_socket, (char*) & dataSize + recieved, 4 - recieved, 0 );
@@ -508,7 +512,10 @@ void TCPClientThread::RecievePacket() {
 
   while (recieved < dataSize) {
     FD_ZERO(&test_set);
+#pragma warning( push )
+#pragma warning(disable: 4127) // conditional expression is constant
     FD_SET(m_socket, &test_set);
+#pragma warning( pop )
     select(0, &test_set, NULL, NULL, &t);
     if (FD_ISSET(m_socket, &test_set)) {
       int bytesRecv = recv(m_socket, (char*) & data[recieved], dataSize - recieved, 0 );
@@ -532,7 +539,6 @@ void TCPClientThread::RecievePacket() {
       memcpy(reply->last_reply, fi, sizeof(ServerFrameInfo));
       fi = (ServerFrameInfo *)reply->last_reply;
 
-      fi = (ServerFrameInfo *)reply->last_reply;
       BYTE* dstp = (unsigned char*)reply->last_reply + sizeof(ServerFrameInfo);
       BYTE* srcp = (unsigned char*)&data[1] + sizeof(ServerFrameInfo);
       TCPCompression* t = 0;

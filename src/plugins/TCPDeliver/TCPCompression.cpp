@@ -32,124 +32,157 @@
 // TCPDeliver (c) 2004 by Klaus Post
 
 
-#include "TCPCompression.h"
+#include "stdafx.h"
+
+// #include "TCPCompression.h"
+
+/******************************
+ * Downwards deltaencoded.
+ ******************************/
 
 
-int TCPCompression::CompressImage(BYTE* image, int rowsize, int h, int pitch) {
+inline void PredictDownCompress(BYTE* image, int rowsize, int h, int pitch) {
+  // Pitch mod 16
+  // Height > 2
+  rowsize = (rowsize+15)&~15;
+
+  __asm {
+    xor eax, eax        // x offset
+    mov ecx, [pitch]
+    mov edx, rowsize
+    align 16
+xloopback:
+    mov ebx, [h]
+    mov esi, [image]    // src
+    pxor mm4, mm4       // top1
+    pxor mm5, mm5       // top2
+	add esi, eax
+    align 16
+yloopback:
+    movq mm0, [esi]     // bot1
+     movq mm1, [esi+8]  // bot2
+    psubb mm4, mm0      // top1 - bot1
+     psubb mm5, mm1     // top2 - bot2
+    movq [esi], mm4     // (top-bot)1
+     movq [esi+8], mm5  // (top-bot)2
+    add esi, ecx        // Next line
+     movq mm4, mm0      // top1 = bot1
+    dec ebx
+     movq mm5, mm1      // top2 = bot2
+    jnz yloopback
+
+    add eax, 16         // Next 16 pixels
+    cmp eax, edx
+    jl xloopback
+
+    emms
+  }
+}
+
+/******************************/
+
+inline void PredictDownDeCompress(BYTE* image, int rowsize, int h, int pitch) {
+  // Pitch mod 16
+  // Height > 2
+  rowsize = (rowsize+15)&~15;
+
+  __asm {
+    xor eax, eax        // x offset
+    mov ecx, [pitch]
+    mov edx, rowsize
+    align 16
+xloopback:
+    mov ebx, [h]
+    mov esi, [image]    // src
+    pxor mm4, mm4       // top1
+    pxor mm5, mm5       // top2
+	add esi, eax
+    align 16
+yloopback:
+    movq mm0, [esi]     // (top-bot)1
+     movq mm1, [esi+8]  // (top-bot)2
+    psubb mm4, mm0      // top1 - (top-bot)1
+     psubb mm5, mm1     // top2 - (top-bot)2
+    movq [esi], mm4
+     movq [esi+8], mm5
+
+    add esi, ecx        // Next line
+    dec ebx
+    jnz yloopback
+
+    add eax, 16         // Next 16 pixels
+    cmp eax, edx
+    jl xloopback
+
+    emms
+  }
+}
+
+/******************************/
+
+
+int TCPCompression::CompressImage(BYTE* image, int /* rowsize */, int h, int pitch) {
   dst = image;
   inplace = true;
   return pitch*h;
 }
 
-int TCPCompression::DeCompressImage(BYTE* image, int rowsize, int h, int pitch, int data_size, BYTE* _dst) {
+int TCPCompression::DeCompressImage(BYTE* image, int /* rowsize */, int h, int pitch, int /* data_size */, BYTE* /* _dst */) {
   dst = image;
   inplace = true;
   return pitch*h;
 }
+
+
+/******************************/
+
 
 PredictDownLZO::PredictDownLZO() {
   compression_type = ServerFrameInfo::COMPRESSION_DELTADOWN_LZO;
-  wrkmem = (lzo_bytep) malloc(LZO1X_1_MEM_COMPRESS);
+  wrkmem = (lzo_bytep) malloc(LZO1X_1_15_MEM_COMPRESS);
 }
 
 PredictDownLZO::~PredictDownLZO(void) {
   free(wrkmem);
 }
-/******************************
- * Downwards deltaencoded.
- ******************************/
 
 int PredictDownLZO::CompressImage(BYTE* image, int rowsize, int h, int pitch) {
   // Pitch mod 16
   // Height > 2
-  rowsize = (rowsize+15)&~15;
-  inplace = false;    
-  __asm {
-    xor eax, eax        // x offset
-    mov ecx, [pitch]
-    mov edx, rowsize
-xloopback:
-    mov ebx, [h]
-    mov esi, [image]    // src
-    pxor mm4, mm4   // left
-    pxor mm5, mm5   // left2
-yloopback:
-    movq mm0, [esi+eax]   // temp
-    movq mm1, [esi+eax+8]   // temp
-    movq mm2, mm0
-    movq mm3, mm1
-    psubb mm0, mm4  // left - temp
-    psubb mm1, mm5  // left - temp
-    movq [esi+eax], mm0
-    movq [esi+eax+8], mm1
-    movq mm4, mm2  // left = temp
-    movq mm5, mm3  // left = temp
-    add esi, ecx  // Next line
-    dec ebx
-    jnz yloopback
+  inplace = false;
 
-    add eax, 16
-    cmp eax, edx
-    jl xloopback
+  PredictDownCompress(image, rowsize, h, pitch);
 
-    emms
-  }
   int in_size = pitch*h;
-  int out_size = -1;
-
+  lzo_uint out_size = ~0ul;
   dst = (BYTE*)_aligned_malloc(in_size + (in_size / 16) + 64 + 3, 16);
 //  dst = (BYTE*)_aligned_malloc(in_size + (in_size >>6) + 16 + 3, 16);
-  lzo1x_1_compress(image, in_size ,(unsigned char *)dst, (lzo_uint *)&out_size , wrkmem);
+  lzo1x_1_15_compress(image, in_size ,dst, &out_size , wrkmem);
   _RPT2(0, "TCPCompression: Compressed %d bytes into %d bytes.\n", in_size, out_size);
   return out_size;
 }
- 
-int PredictDownLZO::DeCompressImage(BYTE* image, int rowsize, int h, int pitch, int in_size, BYTE* _dst) {
+
+int PredictDownLZO::DeCompressImage(BYTE* image, int rowsize, int h, int pitch, int in_size, BYTE* /* _dst */) {
   // Pitch mod 16
   // Height > 2
-  inplace = false;    
-  unsigned int dst_size = pitch*h;
+  inplace = false;
+  lzo_uint dst_size = pitch*h;
   dst = (BYTE*)_aligned_malloc(dst_size+4, 64);  // LZO fast may overwrite the buffer by up to 3 bytes, so we do not use inplace
-  lzo1x_decompress_asm_fast(image, in_size, dst, (lzo_uint *)&dst_size, wrkmem);
+  lzo1x_decompress_asm_fast(image, in_size, dst, &dst_size, wrkmem);
 //  lzo1x_decompress(image, in_size, dst, &dst_size, wrkmem);
 
   if ((int)dst_size != pitch*h) {
     _RPT0(1,"TCPCompression: Size did NOT match");
   }
-    
-  rowsize = (rowsize+15)&~15;
-  image = dst;
-    
-  __asm {
-    xor eax, eax        // x offset
-    mov ecx, [pitch]
-    mov edx, rowsize
-xloopback:
-    mov ebx, [h]
-    mov esi, [image]    // src
-    pxor mm4, mm4   // left
-    pxor mm5, mm5   // left2
-yloopback:
-    movq mm0, [esi+eax]   // src
-    movq mm1, [esi+eax+8]   // src2
-    paddb mm4, mm0  // left + src
-    paddb mm5, mm1  // left + src
-    movq [esi+eax], mm4
-    movq [esi+eax+8], mm5
-    add esi, ecx  // Next line
-    dec ebx
-    jnz yloopback
 
-    add eax, 16
-    cmp eax, edx
-    jl xloopback
+  PredictDownDeCompress(dst, rowsize, h, pitch);
 
-    emms
-  }
   _RPT2(0, "TCPCompression: Decompressed %d bytes into %d bytes.\n", in_size, dst_size);
   return dst_size;
 }
 
+
+/******************************/
 
 
 PredictDownHuffman::PredictDownHuffman() {
@@ -158,46 +191,13 @@ PredictDownHuffman::PredictDownHuffman() {
 
 PredictDownHuffman::~PredictDownHuffman(void) {
 }
-/******************************
- * Downwards deltaencoded.
- ******************************/
 
 int PredictDownHuffman::CompressImage(BYTE* image, int rowsize, int h, int pitch) {
   // Pitch mod 16
   // Height > 2
-  inplace = false;    
-  rowsize = (rowsize+15)&~15;
-    
-  __asm {
-    xor eax, eax        // x offset
-    mov ecx, [pitch]
-    mov edx, rowsize
-xloopback:
-    mov ebx, [h]
-    mov esi, [image]    // src
-    pxor mm4, mm4   // left
-    pxor mm5, mm5   // left2
-yloopback:
-    movq mm0, [esi+eax]   // temp
-    movq mm1, [esi+eax+8]   // temp
-    movq mm2, mm0
-    movq mm3, mm1
-    psubb mm0, mm4  // left - temp
-    psubb mm1, mm5  // left - temp
-    movq [esi+eax], mm0
-    movq [esi+eax+8], mm1
-    movq mm4, mm2  // left = temp
-    movq mm5, mm3  // left = temp
-    add esi, ecx  // Next line
-    dec ebx
-    jnz yloopback
+  inplace = false;
 
-    add eax, 16
-    cmp eax, edx
-    jl xloopback
-
-    emms
-  }
+  PredictDownCompress(image, rowsize, h, pitch);
 
   int in_size = pitch*h;
   unsigned int out_size = in_size*2;
@@ -208,7 +208,7 @@ yloopback:
   _RPT2(0, "TCPCompression: Compressed %d bytes into %d bytes.(Huffman)\n", in_size, out_size);
   return out_size;
 }
- 
+
 int PredictDownHuffman::DeCompressImage(BYTE* image, int rowsize, int h, int pitch, int in_size, BYTE* _dst) {
   // Pitch mod 16
   // Height > 2
@@ -218,38 +218,14 @@ int PredictDownHuffman::DeCompressImage(BYTE* image, int rowsize, int h, int pit
 
   Huffman_Uncompress(image, dst, in_size, dst_size);
 
-  rowsize = (rowsize+15)&~15;
-  image = dst;
-    
-  __asm {
-    xor eax, eax        // x offset
-    mov ecx, [pitch]
-    mov edx, rowsize
-xloopback:
-    mov ebx, [h]
-    mov esi, [image]    // src
-    pxor mm4, mm4   // left
-    pxor mm5, mm5   // left2
-yloopback:
-    movq mm0, [esi+eax]   // src
-    movq mm1, [esi+eax+8]   // src2
-    paddb mm4, mm0  // left + src
-    paddb mm5, mm1  // left + src
-    movq [esi+eax], mm4
-    movq [esi+eax+8], mm5
-    add esi, ecx  // Next line
-    dec ebx
-    jnz yloopback
+  PredictDownDeCompress(dst, rowsize, h, pitch);
 
-    add eax, 16
-    cmp eax, edx
-    jl xloopback
-
-    emms
-  }
   _RPT2(0, "TCPCompression: Decompressed %d bytes into %d bytes.(Huffmann)\n", in_size, dst_size);
   return dst_size;
 }
+
+
+/******************************/
 
 
 PredictDownGZip::PredictDownGZip() {
@@ -260,46 +236,13 @@ PredictDownGZip::PredictDownGZip() {
 PredictDownGZip::~PredictDownGZip(void) {
   free(z);
 }
-/******************************
- * Downwards deltaencoded.
- ******************************/
 
 int PredictDownGZip::CompressImage(BYTE* image, int rowsize, int h, int pitch) {
   // Pitch mod 16
   // Height > 2
-  inplace = false;    
-  rowsize = (rowsize+15)&~15;
-    
-  __asm {
-    xor eax, eax        // x offset
-    mov ecx, [pitch]
-    mov edx, rowsize
-xloopback:
-    mov ebx, [h]
-    mov esi, [image]    // src
-    pxor mm4, mm4   // left
-    pxor mm5, mm5   // left2
-yloopback:
-    movq mm0, [esi+eax]   // temp
-    movq mm1, [esi+eax+8]   // temp
-    movq mm2, mm0
-    movq mm3, mm1
-    psubb mm0, mm4  // left - temp
-    psubb mm1, mm5  // left - temp
-    movq [esi+eax], mm0
-    movq [esi+eax+8], mm1
-    movq mm4, mm2  // left = temp
-    movq mm5, mm3  // left = temp
-    add esi, ecx  // Next line
-    dec ebx
-    jnz yloopback
+  inplace = false;
 
-    add eax, 16
-    cmp eax, edx
-    jl xloopback
-
-    emms
-  }
+  PredictDownCompress(image, rowsize, h, pitch);
 
   int in_size = pitch*h;
   unsigned int out_size = in_size*2;
@@ -313,11 +256,11 @@ yloopback:
   z->avail_out = out_size;
   z->next_out = dst;
   z->total_out = 0;
-  
+
   z->data_type = Z_BINARY;
   deflateInit2(z, Z_BEST_SPEED, Z_DEFLATED, 15, 8, Z_HUFFMAN_ONLY);
 //  deflateInit(z, Z_BEST_SPEED);
-  int i = deflate(z, Z_FINISH);
+  deflate(z, Z_FINISH);
 
   deflateEnd(z);
   out_size = z->total_out;//uLong
@@ -328,7 +271,7 @@ yloopback:
   _RPT2(0, "TCPCompression: Compressed %d bytes into %d bytes (GZIP).\n", in_size, out_size);
   return out_size;
 }
- 
+
 int PredictDownGZip::DeCompressImage(BYTE* image, int rowsize, int h, int pitch, int in_size, BYTE* _dst) {
   // Pitch mod 16
   // Height > 2
@@ -339,7 +282,7 @@ int PredictDownGZip::DeCompressImage(BYTE* image, int rowsize, int h, int pitch,
   memset(z, 0, sizeof(z_stream_s));
 
   unsigned int* dstint = (unsigned int*)&image[in_size-4];
-  z->adler = dstint[0]; 
+  z->adler = dstint[0];
   in_size-=4;
 
   z->avail_in = in_size;
@@ -354,41 +297,17 @@ int PredictDownGZip::DeCompressImage(BYTE* image, int rowsize, int h, int pitch,
 
 
   inflateInit(z);
-  int i = inflate(z, Z_FINISH);
+  inflate(z, Z_FINISH);
   inflateEnd(z);
 
-  rowsize = (rowsize+15)&~15;
-  image = dst;
-    
-  __asm {
-    xor eax, eax        // x offset
-    mov ecx, [pitch]
-    mov edx, rowsize
-xloopback:
-    mov ebx, [h]
-    mov esi, [image]    // src
-    pxor mm4, mm4   // left
-    pxor mm5, mm5   // left2
-yloopback:
-    movq mm0, [esi+eax]   // src
-    movq mm1, [esi+eax+8]   // src2
-    paddb mm4, mm0  // left + src
-    paddb mm5, mm1  // left + src
-    movq [esi+eax], mm4
-    movq [esi+eax+8], mm5
-    add esi, ecx  // Next line
-    dec ebx
-    jnz yloopback
+  PredictDownDeCompress(dst, rowsize, h, pitch);
 
-    add eax, 16
-    cmp eax, edx
-    jl xloopback
-
-    emms
-  }
   _RPT2(0, "TCPCompression: Decompressed %d bytes into %d bytes. (GZIP)\n", in_size, dst_size);
   return dst_size;
 }
+
+
+/******************************/
 
 
 PredictDownRLE::PredictDownRLE() {
@@ -397,46 +316,13 @@ PredictDownRLE::PredictDownRLE() {
 
 PredictDownRLE::~PredictDownRLE(void) {
 }
-/******************************
- * Downwards deltaencoded.
- ******************************/
 
 int PredictDownRLE::CompressImage(BYTE* image, int rowsize, int h, int pitch) {
   // Pitch mod 16
   // Height > 2
   inplace = false;
-  rowsize = (rowsize+15)&~15;
 
-  __asm {
-    xor eax, eax        // x offset
-    mov ecx, [pitch]
-    mov edx, rowsize
-xloopback:
-    mov ebx, [h]
-    mov esi, [image]    // src
-    pxor mm4, mm4   // left
-    pxor mm5, mm5   // left2
-yloopback:
-    movq mm0, [esi+eax]   // temp
-    movq mm1, [esi+eax+8]   // temp
-    movq mm2, mm0
-    movq mm3, mm1
-    psubb mm0, mm4  // left - temp
-    psubb mm1, mm5  // left - temp
-    movq [esi+eax], mm0
-    movq [esi+eax+8], mm1
-    movq mm4, mm2  // left = temp
-    movq mm5, mm3  // left = temp
-    add esi, ecx  // Next line
-    dec ebx
-    jnz yloopback
-
-    add eax, 16
-    cmp eax, edx
-    jl xloopback
-
-    emms
-  }
+  PredictDownCompress(image, rowsize, h, pitch);
 
   int in_size = pitch*h;
   unsigned int out_size = in_size*2;
@@ -456,35 +342,10 @@ int PredictDownRLE::DeCompressImage(BYTE* image, int rowsize, int h, int pitch, 
 
   RLE_Uncompress(image, dst, in_size);
 
-  rowsize = (rowsize+15)&~15;
-  image = dst;
+  PredictDownDeCompress(dst, rowsize, h, pitch);
 
-  __asm {
-    xor eax, eax        // x offset
-    mov ecx, [pitch]
-    mov edx, rowsize
-xloopback:
-    mov ebx, [h]
-    mov esi, [image]    // src
-    pxor mm4, mm4   // left
-    pxor mm5, mm5   // left2
-yloopback:
-    movq mm0, [esi+eax]   // src
-    movq mm1, [esi+eax+8]   // src2
-    paddb mm4, mm0  // left + src
-    paddb mm5, mm1  // left + src
-    movq [esi+eax], mm4
-    movq [esi+eax+8], mm5
-    add esi, ecx  // Next line
-    dec ebx
-    jnz yloopback
-
-    add eax, 16
-    cmp eax, edx
-    jl xloopback
-
-    emms
-  }
   _RPT2(0, "TCPCompression: Decompressed %d bytes into %d bytes.(RLE)\n", in_size, dst_size);
   return dst_size;
 }
+
+/******************************/

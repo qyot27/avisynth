@@ -3,6 +3,7 @@
 // Used by ClientGUI.rc
 //
 #define IDD_SERVERGUI                   101
+#define IDI_ICON                        103
 #define IDD_CLIENTGUI                   106
 #define IDC_IP                          1000
 #define IDC_EDIT2                       1001
@@ -22,9 +23,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        102
+#define _APS_NEXT_RESOURCE_VALUE        107
 #define _APS_NEXT_COMMAND_VALUE         40001
-#define _APS_NEXT_CONTROL_VALUE         1010
-#define _APS_NEXT_SYMED_VALUE           101
+#define _APS_NEXT_CONTROL_VALUE         1014
+#define _APS_NEXT_SYMED_VALUE           107
 #endif
 #endif

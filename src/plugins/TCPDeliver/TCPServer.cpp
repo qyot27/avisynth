@@ -34,7 +34,9 @@
 
 // TCPDeliver (c) 2004 by Klaus Post
 
-#define _WIN32_WINNT 0x0403
+#include "stdafx.h"
+
+// #define _WIN32_WINNT 0x0403
 
 #include "TCPServer.h"
 #include "ServerGUICode.h"
@@ -53,38 +55,46 @@ HWND hDlg;  // Windowhandle
  ********************************************************************/
 
 
-TCPServer::TCPServer(PClip _child, int port, IScriptEnvironment* env) : GenericVideoFilter(_child) {
-
+TCPServer::TCPServer(PClip _child, u_short port, IScriptEnvironment* env) : GenericVideoFilter(_child) {
 
   _RPT0(0, "TCPServer: Opening instance\n");
-  if (!InitializeCriticalSectionAndSpinCount(&FramesCriticalSection, 0x80000010) )
+  if (!InitializeCriticalSectionAndSpinCount(&FramesCriticalSection, 0) )
     env->ThrowError("TCPServer: Could not initialize critical section");
-  s = new TCPServerListener(port, child, env);
-  s->FramesCriticalSection = this->FramesCriticalSection;
+
+  s = new TCPServerListener(port, child, env, &FramesCriticalSection);
 }
 
 TCPServer::~TCPServer() {
   _RPT0(0, "TCPServer: Killing thread.\n");
-  DWORD dwExitCode = 0;
+
   s->KillThread();
+
   while (s->thread_running) {
-    Sleep(10);
+    Sleep(1);
   }
   _RPT0(0, "TCPServer: Thread killed.\n");
   delete s;
+
   DeleteCriticalSection(&FramesCriticalSection);
 
 }
 
-  PVideoFrame __stdcall TCPServer::GetFrame(int n, IScriptEnvironment* env) {
-    EnterCriticalSection(&FramesCriticalSection);
-    PVideoFrame p = child->GetFrame(n, env);
+PVideoFrame __stdcall TCPServer::GetFrame(int n, IScriptEnvironment* env) {
+  PVideoFrame p;
+  EnterCriticalSection(&FramesCriticalSection);
+  try {
+    p = child->GetFrame(n, env);
+  }
+  catch (...) {
     LeaveCriticalSection(&FramesCriticalSection);
-    return p;
+    throw;
+  }
+  LeaveCriticalSection(&FramesCriticalSection);
+  return p;
 }
 
-AVSValue __cdecl Create_TCPServer(AVSValue args, void* user_data, IScriptEnvironment* env) {
-  return new TCPServer(args[0].AsClip(), args[1].AsInt(22050), env);
+AVSValue __cdecl Create_TCPServer(AVSValue args, void* /* user_data */, IScriptEnvironment* env) {
+  return new TCPServer(args[0].AsClip(), (u_short)args[1].AsInt(22050), env);
 }
 
 
@@ -108,7 +118,8 @@ DWORD WINAPI StartServer(LPVOID p) {
   created successfully.
  *********************************/
 
-TCPServerListener::TCPServerListener(int port, PClip _child, IScriptEnvironment* _env) : child(_child), env(_env) {
+TCPServerListener::TCPServerListener(u_short port, PClip _child, IScriptEnvironment* _env, CRITICAL_SECTION *p)
+ : child(_child), env(_env), pFramesCriticalSection(p), wnd(0) {
 
   thread_running = false;
 
@@ -119,9 +130,8 @@ TCPServerListener::TCPServerListener(int port, PClip _child, IScriptEnvironment*
   m_socket = socket( AF_INET, SOCK_STREAM, IPPROTO_TCP );
 
   if ( m_socket == INVALID_SOCKET ) {
-    env->ThrowError("TCPServer: Could not create socket()");
     WSACleanup();
-    return ;
+    env->ThrowError("TCPServer: Could not create socket()");
   }
 
   hostent* localHost;
@@ -129,10 +139,17 @@ TCPServerListener::TCPServerListener(int port, PClip _child, IScriptEnvironment*
 
   // Get the local host information
   localHost = gethostbyname("");
+  if (!localHost || !localHost->h_addr_list) {
+    closesocket(m_socket);
+    WSACleanup();
+    env->ThrowError("TCPServer: gethostbyname(\"\") - error=%d", WSAGetLastError());
+  }
+
   localIP = inet_ntoa (*(struct in_addr *) * localHost->h_addr_list);
 
+  // 1K send and recv buffer for accept socket
   setsockopt(m_socket, SOL_SOCKET, SO_RCVBUF, (char *) &rcvbufsize, sizeof(rcvbufsize));
-  setsockopt(m_socket, SOL_SOCKET, SO_SNDBUF, (char *) &sendbufsize, sizeof(sendbufsize));
+  setsockopt(m_socket, SOL_SOCKET, SO_SNDBUF, (char *) &rcvbufsize, sizeof(rcvbufsize));
 
   // Set up the sockaddr structure
   service.sin_family = AF_INET;
@@ -141,12 +158,15 @@ TCPServerListener::TCPServerListener(int port, PClip _child, IScriptEnvironment*
 
   if ( bind( m_socket, (SOCKADDR*) &service, sizeof(service) ) == SOCKET_ERROR ) {
     closesocket(m_socket);
+    WSACleanup();
     env->ThrowError("TCPServer: bind() failed." );
-    return ;
   }
 
-  if ( listen( m_socket, 1 ) == SOCKET_ERROR )
+  if ( listen( m_socket, 1 ) == SOCKET_ERROR ) {
+    closesocket(m_socket);
+    WSACleanup();
     env->ThrowError("TCPServer: Error listening on socket.\n");
+  }
 
   shutdown = false;
 
@@ -178,6 +198,14 @@ TCPServerListener::TCPServerListener(int port, PClip _child, IScriptEnvironment*
   thread_running = true;
 
 }
+
+TCPServerListener::~TCPServerListener() {
+  if (wnd) {
+    DestroyWindow(wnd);
+  }
+}
+
+
 /*************************
   TCPServerListener::Listen()
 
@@ -227,7 +255,10 @@ void TCPServerListener::Listen() {
     // Attempt to Accept an incoming request
     clientText[0] = 0;
     FD_ZERO(&test_set);
+#pragma warning( push )
+#pragma warning(disable: 4127) // conditional expression is constant
     FD_SET(m_socket, &test_set);
+#pragma warning( pop )
     select(0, &test_set, NULL, NULL, &t2);
 
     if (FD_ISSET(m_socket, &test_set)) {
@@ -240,15 +271,21 @@ void TCPServerListener::Listen() {
     FD_ZERO(&test_set2);
 
     bool anyconnected = false;
-	  bool anydatapending = false;
+    bool anydatapending = false;
     bool updateStats = (abs((int)(GetTickCount() - tick)) > 100);
 
     for (i = 0; i < FD_SETSIZE; i++) {
       if (s_list[i].isConnected) {
+#pragma warning( push )
+#pragma warning(disable: 4127) // conditional expression is constant
         FD_SET(s_list[i].s, &test_set);
+#pragma warning( pop )
         if (s_list[i].isDataPending) {
+#pragma warning( push )
+#pragma warning(disable: 4127) // conditional expression is constant
           FD_SET(s_list[i].s, &test_set2);
-		      anydatapending = true;
+#pragma warning( pop )
+          anydatapending = true;
         }
         anyconnected = true;
       }
@@ -263,6 +300,8 @@ void TCPServerListener::Listen() {
     bool request_handled = false;
     StatClientsConnected  = 0;
 
+    char *_clientText = clientText;
+    int maxText = 8191;
     for (i = 0; i < FD_SETSIZE; i++) {
       s.dataSize = 0;
       if (s_list[i].isConnected) {
@@ -291,8 +330,11 @@ void TCPServerListener::Listen() {
           }
           delete tr;
         } // end if fd is set
-        if (updateStats)
-          sprintf_s(clientText, 8192, "[%d]: %s", i, s_list[i].status_text);
+        if (updateStats && maxText > 0) {
+          int length = _snprintf(_clientText, maxText, "[%d]: %s\r\n", i, s_list[i].status_text);
+          _clientText += length;
+          maxText -= length;
+        }
       } // end if list != null
     } // end for i
 
@@ -308,7 +350,12 @@ void TCPServerListener::Listen() {
       t.tv_usec = 100000;  // If no request we allow it to wait 100 ms instead.
       if (prefetch_frame > 0) {
         _RPT2(0, "TCPServer: Prerequesting frame: %d (%d)", prefetch_frame, GetTickCount());
-        child->GetFrame(prefetch_frame, env);  // We are idle - prefetch frame
+        EnterCriticalSection(pFramesCriticalSection);
+        try {
+          child->GetFrame(prefetch_frame, env);  // We are idle - prefetch frame
+        }
+        catch (...) { }
+        LeaveCriticalSection(pFramesCriticalSection);
         prefetch_frame = -1;
         StatPrerequested++;
       }
@@ -318,6 +365,7 @@ void TCPServerListener::Listen() {
     }
 
     if (updateStats) {
+      clientText[8191] = 0;
       SetDlgItemText(wnd,IDC_SERVERSTATUS,clientText);
       UpdateStatWindow(GetTickCount() - tick);
       tick = GetTickCount();
@@ -339,7 +387,6 @@ void TCPServerListener::Listen() {
 
   closesocket(m_socket);
   WSACleanup();
-  DestroyWindow(wnd);
 
   thread_running = false;
   _RPT0(0, "TCPServer: Client thread no longer running.\n");
@@ -348,23 +395,33 @@ void TCPServerListener::Listen() {
 }
 
 void TCPServerListener::UpdateStatWindow(DWORD sinceLast) {
-  if (!sinceLast)
-    sinceLast = 0;
+  float fps = 0;
+  int KiB_S = 0;
+  int percent = 0;
+
+  if (sinceLast) {
+    fps = (StatFramesLast * 1000.0f / sinceLast);
+    KiB_S = (int)(StatBytesLast / (sinceLast * 1.024f));
+  }
+  if (StatImgTransferredUC && StatImgTransferred) {
+    percent = (int)(100*(StatImgTransferredUC - StatImgTransferred) / StatImgTransferredUC);
+  }
 
   char buf[4096];
-  sprintf(&buf[0], "Clients Connected:%d, Total Clients:%d\r\n"
+  _snprintf(buf, 4095, "Clients Connected:%d, Total Clients:%d\r\n"
     "Frames Requested:%d, Frames PreRendered:%d\r\n"
-    "Speed: %5.2fFPS, %dKB/s\r\n"
-    "Frame data sent (compressed):%dMB, Uncompressed:%dMB (%d%%)\r\n"
-    "Audio data sent:%dKB",
+    "Speed: %5.2fFPS, %dKiB/s\r\n"
+    "Frame data sent compressed:%dMiB, Uncompressed:%dMiB (%d%%)\r\n"
+    "Audio data sent:%dKiB",
     StatClientsConnected, StatClientsTotalConnected,
     StatRequested, StatPrerequested,
-    ((float)StatFramesLast * 1000.0f / (float)sinceLast), (int)(((float)StatBytesLast * 1000.0f) / ((float)sinceLast * 1024.0f)),
-    (int)(StatImgTransferred>>20), (int)(StatImgTransferredUC>>20), (int)(100.0f*(float)(StatImgTransferredUC - StatImgTransferred) / (float)StatImgTransferredUC),
+    fps, KiB_S,
+    (int)(StatImgTransferred>>20), (int)(StatImgTransferredUC>>20), percent,
     (int)(StatAudTransferred>>10)
     );
+  buf[4095] = 0;
 
-  SetDlgItemText(wnd,IDC_OVERALLSERVER,buf);
+  SetDlgItemText(wnd, IDC_OVERALLSERVER, buf);
   StatBytesLast = StatFramesLast = 0;
 }
 
@@ -384,14 +441,15 @@ void TCPServerListener::AcceptClient(SOCKET AcceptSocket, ClientConnection* s_li
     StatClientsTotalConnected++;
     int one = 1;         // for 4.3 BSD style setsockopt()
     setsockopt(AcceptSocket, IPPROTO_TCP, TCP_NODELAY, (PCHAR )&one, sizeof(one));
+    // 256K send and 1K recv buffer for client socket
     setsockopt(AcceptSocket, SOL_SOCKET, SO_RCVBUF, (char *) &rcvbufsize, sizeof(rcvbufsize));
     setsockopt(AcceptSocket, SOL_SOCKET, SO_SNDBUF, (char *) &sendbufsize, sizeof(sendbufsize));
 
   } else {
     _RPT0(0, "TCPServer: All slots full.\n");
     s.allocateBuffer(0);
-    s.data[0] = REQUEST_NOMORESOCKETS;
-    send(AcceptSocket, (const char*)s.data, s.dataSize, 0);
+    s.setType(REQUEST_NOMORESOCKETS);
+    send(AcceptSocket, (const char*)s.internal_data, s.dataSize, 0);
     closesocket(AcceptSocket);
     s.freeBuffer();
   }
@@ -420,7 +478,7 @@ void TCPServerListener::SendPacket(ClientConnection* cc, ServerReply* s) {
       cc->totalPendingBytes = 0;
       return;
     }
-	BytesSent += r;
+    BytesSent += r;
   }
   cc->pendingData = s->internal_data;
   cc->isDataPending = !!s->dataSize;
@@ -579,11 +637,18 @@ void TCPServerListener::SendParityInfo(ServerReply* s, const char* request) {
 
 // Requests should optimally be handled by a separate thread to avoid blocking other clients while requesting the frame.
 void TCPServerListener::SendFrameInfo(ServerReply* s, const char* request) {
+  PVideoFrame src;
   _RPT0(0, "TCPServer: Sending Frame Info!\n");
   ClientRequestFrame* f = (ClientRequestFrame *) request;
-  EnterCriticalSection(&FramesCriticalSection);
-  PVideoFrame src = child->GetFrame(f->n, env);
-  LeaveCriticalSection(&FramesCriticalSection);
+  EnterCriticalSection(pFramesCriticalSection);
+  try {
+    src = child->GetFrame(f->n, env);
+  }
+  catch (...) {
+    LeaveCriticalSection(pFramesCriticalSection);
+    throw;
+  }
+  LeaveCriticalSection(pFramesCriticalSection);
   prefetch_frame = f->n + 1;
 
   env->MakeWritable(&src);
@@ -606,7 +671,6 @@ void TCPServerListener::SendFrameInfo(ServerReply* s, const char* request) {
   }
 
   // Prepare data
-  const BYTE* srcp = src->GetReadPtr();
   int src_pitch = src->GetPitch();
   int src_height = src->GetHeight();
   int src_rowsize = src->GetRowSize();
@@ -679,7 +743,7 @@ void TCPServerListener::SendAudioInfo(ServerReply* s, const char* request) {
   s->setType(SERVER_SENDING_AUDIO);
 
   if (a->bytes != child->GetVideoInfo().BytesFromAudioSamples(a->count)) {
-    _RPT0(1, "TCPServer: Did not recieve proper bytecount.\n");
+    _RPT0(1, "TCPServer: Did not receive proper bytecount.\n");
   }
 
   ServerAudioInfo sfi;
