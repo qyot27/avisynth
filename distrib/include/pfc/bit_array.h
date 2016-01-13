@@ -192,8 +192,8 @@ public:
 	inline static void g_set(unsigned char * ptr,unsigned idx,bool val)
 	{
 		unsigned char & dst = ptr[idx>>3];
-		unsigned char mask = (unsigned char)(1<<(idx&7));
-		dst = val ? dst|mask : dst&~mask;
+		unsigned int mask = 1<<(idx&7);
+		dst = (unsigned char)(val ? dst|mask : dst&~mask);
 	}
 
 	inline static unsigned g_estimate_size(unsigned count) {return (count+7)>>3;}

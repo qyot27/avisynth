@@ -6,8 +6,12 @@
 
 #pragma warning (disable: 4512) // assignment operator could not be generated
 
-// #pragma warning( push )
-// #pragma warning (disable: 4701) // local variable may be used without having been initialized
+#if _MSC_VER <= 1200
+#pragma warning (disable: 4514) // unreferenced inline function has been removed
+
+#pragma warning( push )
+#pragma warning (disable: 4701) // local variable may be used without having been initialized
+#endif
 
 namespace SoftWire
 {
@@ -1441,6 +1445,8 @@ namespace SoftWire
 	}
 }
 
-// #pragma warning( pop )
+#if _MSC_VER <= 1200
+#pragma warning( pop )
+#endif
 
 #endif   // SoftWire_Operand_hpp

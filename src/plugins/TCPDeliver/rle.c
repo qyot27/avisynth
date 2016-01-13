@@ -88,7 +88,7 @@ static __inline void _RLE_WriteRep( unsigned char *out, unsigned int *outpos,
         if( symbol == marker )
         {
             out[ idx ++ ] = marker;
-            out[ idx ++ ] = count-1;
+            out[ idx ++ ] = (unsigned char)(count-1);
         }
         else
         {
@@ -104,9 +104,9 @@ static __inline void _RLE_WriteRep( unsigned char *out, unsigned int *outpos,
         -- count;
         if( count >= 128 )
         {
-            out[ idx ++ ] = (count >> 8) | 0x80;
+            out[ idx ++ ] = (unsigned char)((count >> 8) | 0x80);
         }
-        out[ idx ++ ] = count & 0xff;
+        out[ idx ++ ] = (unsigned char)(count & 0xff);
         out[ idx ++ ] = symbol;
     }
     *outpos = idx;
@@ -181,7 +181,7 @@ int RLE_Compress( unsigned char *in, unsigned char *out,
     {
         if( histogram[ i ] < histogram[ marker ] )
         {
-            marker = i;
+            marker = (unsigned char)i;
         }
     }
 

@@ -2,8 +2,8 @@ HINSTANCE g_hInst;
 
 BOOL WINAPI DllMain(
   HINSTANCE hinstDLL,
-  DWORD fdwReason,
-  LPVOID lpvReserved
+  DWORD /* fdwReason */,
+  LPVOID /* lpvReserved */
   )
 {
   g_hInst = hinstDLL;
@@ -15,7 +15,7 @@ BOOL CALLBACK DialogProc(
   HWND hwndDlg,  // handle to dialog box
   UINT uMsg,     // message
   WPARAM wParam, // first message parameter
-  LPARAM lParam  // second message parameter
+  LPARAM /* lParam */  // second message parameter
   )
 {
 	char buf[MAX_PATH];

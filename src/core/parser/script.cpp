@@ -622,7 +622,9 @@ AVSValue __cdecl Exist(AVSValue args, void*, IScriptEnvironment* env) {
       return false;
 
   struct _finddata_t c_file;
-
+#ifndef intptr_t
+  typedef long intptr_t;
+#endif
   intptr_t f = _findfirst(filename, &c_file);
 
   if (f == -1)

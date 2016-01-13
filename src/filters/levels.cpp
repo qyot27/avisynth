@@ -504,9 +504,9 @@ PVideoFrame __stdcall RGBAdjust::GetFrame(int n, IScriptEnvironment* env)
 			st_b+=(float)accum_b[i]*(float (i-Favg_b)*(i-Favg_b));
 		}}
 		
-		float Fst_r=sqrt(st_r/pixels);
-		float Fst_g=sqrt(st_g/pixels);
-		float Fst_b=sqrt(st_b/pixels);
+		float Fst_r=(float)sqrt(st_r/pixels);
+		float Fst_g=(float)sqrt(st_g/pixels);
+		float Fst_b=(float)sqrt(st_b/pixels);
 
 		char text[512];
 		sprintf(text,

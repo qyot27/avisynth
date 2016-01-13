@@ -241,7 +241,7 @@ namespace SoftWire
 				{
 					if(Operand::isReg(firstType) && firstType != Operand::OPERAND_ST0)
 					{
-						encoding.O1 = encoding.O1 +(unsigned char)(firstReg & 0x7);
+						encoding.O1 = encoding.O1 + (unsigned char)(firstReg & 0x7);
 						encoding.REX.B = (firstReg & 0x8) >> 3;
 					}
 					else if(Operand::isReg(secondType))

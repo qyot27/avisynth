@@ -3,7 +3,9 @@
 
 #include <math.h>
 
-// #pragma warning(disable:4244) // 'argument' : conversion from 'type1' to 'type2', possible loss of data
+#if _MSC_VER <= 1200
+#pragma warning(disable:4244) // 'argument' : conversion from 'type1' to 'type2', possible loss of data
+#endif
 
 #define PI 3.1415926535897932384626433832795
 

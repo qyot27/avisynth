@@ -1138,21 +1138,21 @@ const char* ScriptEnvironment::GetPluginDirectory()
 
   // Allow per user override of plugin directory - henktiggelaar, Jan 2011
   // Try HKEY_CURRENT_USER
-  plugin_dir = GetRegString(RegUserKey, RegAvisynthKey, RegPluginDir); // Returns new'd char[]!
+  char* plugindir = GetRegString(RegUserKey, RegAvisynthKey, RegPluginDir); // Returns new'd char[]!
 
-  if (!plugin_dir) // Try HKEY_LOCAL_MACHINE
-	plugin_dir = GetRegString(RegRootKey, RegAvisynthKey, RegPluginDir);
+  if (!plugindir) // Try HKEY_LOCAL_MACHINE
+	plugindir = GetRegString(RegRootKey, RegAvisynthKey, RegPluginDir);
 
-  if (!plugin_dir)
+  if (!plugindir)
 	return 0;
 
   // remove trailing backslashes
-  int l = strlen(plugin_dir);
-  while (plugin_dir[l-1] == '\\')
+  int l = strlen(plugindir);
+  while (plugindir[l-1] == '\\')
 	l--;
-  SetGlobalVar("$PluginDir$", AVSValue(SaveString(plugin_dir, l)));  // Tritical May 2005
+  SetGlobalVar("$PluginDir$", AVSValue(SaveString(plugindir, l)));  // Tritical May 2005
 
-  delete[] plugin_dir;
+  delete[] plugindir;
 
   return GetVarDef("$PluginDir$").AsString(0);
 }

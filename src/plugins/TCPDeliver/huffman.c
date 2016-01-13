@@ -185,8 +185,8 @@ static __inline void _Huffman_WriteBits( huff_bitstream_t *stream, unsigned int 
   mask = 1 << (bits-1);
   for( count = 0; count < bits; ++ count )
   {
-    *buf = (*buf & (0xff^(1<<(7-bit)))) +
-            ((x & mask ? 1 : 0) << (7-bit));
+    *buf = (unsigned char)((*buf & (0xff^(1<<(7-bit)))) +
+            ((x & mask ? 1 : 0) << (7-bit)));
     x <<= 1;
     bit = (bit+1) & 7;
     if( !bit )
