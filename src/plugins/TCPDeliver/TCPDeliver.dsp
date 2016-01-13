@@ -16,10 +16,11 @@ CFG=TCPDeliver - Win32 Debug
 !MESSAGE NMAKE /f "TCPDeliver.mak" CFG="TCPDeliver - Win32 Debug"
 !MESSAGE 
 !MESSAGE Possible choices for configuration are:
-!MESSAGE 
+!MESSAGE
 !MESSAGE "TCPDeliver - Win32 Release" (based on "Win32 (x86) Dynamic-Link Library")
 !MESSAGE "TCPDeliver - Win32 Debug" (based on "Win32 (x86) Dynamic-Link Library")
-!MESSAGE 
+!MESSAGE "TCPDeliver - Win32 RelSym" (based on "Win32 (x86) Dynamic-Link Library")
+!MESSAGE
 
 # Begin Project
 # PROP AllowPerConfigDependencies 0
@@ -42,19 +43,18 @@ RSC=rc.exe
 # PROP Intermediate_Dir "Release"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
-# ADD BASE CPP /nologo /MT /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "TCPDELIVER_EXPORTS" /YX /FD /c
-# ADD CPP /nologo /MT /W3 /GX /O2 /I "lzo/include" /D "NDEBUG" /D "_WINDOWS" /D "_USRDLL" /D "TCPDELIVER_EXPORTS" /D "WIN32" /D "_MBCS" /D "ASMV" /D "ASMINF" /D "LZO_USE_ASM" /FR /FD /c
-# SUBTRACT CPP /YX
+# ADD BASE CPP /nologo /MT /W4 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "TCPDELIVER_EXPORTS" /YX /FD /c
+# ADD CPP /nologo /MD /W4 /GX /O2 /Ob2 /I "lzo/include" /D "NDEBUG" /D "_WINDOWS" /D "_USRDLL" /D "TCPDELIVER_EXPORTS" /D "WIN32" /D "_MBCS" /D "ASMV" /D "ASMINF" /D "LZO_USE_ASM" /FR /Yu"StdAfx.h" /FD /c
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x417 /d "NDEBUG"
-# ADD RSC /l 0x409 /d "NDEBUG"
+# ADD RSC /l 0x409 /d "NDEBUG" /d "USE_MFC"
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /machine:I386
-# ADD LINK32 nafxcw.lib ws2_32.lib kernel32.lib user32.lib /nologo /version:2.60 /verbose /dll /map /machine:I386
+# ADD LINK32 /nologo /version:2.61 /dll /map /machine:I386 /nodefaultlib:"oldnames" /nodefaultlib:"uuid"
 # SUBTRACT LINK32 /incremental:yes
 # Begin Special Build Tool
 SOURCE="$(InputPath)"
@@ -74,19 +74,45 @@ PostBuild_Cmds=..\..\..\distrib\upx -9 release\TCPDeliver.dll
 # PROP Intermediate_Dir "Debug"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
-# ADD BASE CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "TCPDELIVER_EXPORTS" /YX /FD /GZ /c
-# ADD CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /I "lzo/include" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "TCPDELIVER_EXPORTS" /D "WIN32" /D "_MBCS" /D "ASMV" /D "ASMINF" /D "LZO_USE_ASM" /FR /FD /GZ /c
-# SUBTRACT CPP /YX
+# ADD BASE CPP /nologo /MTd /W4 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "TCPDELIVER_EXPORTS" /YX /FD /GZ /c
+# ADD CPP /nologo /MDd /W3 /Gm /Gi /GX /ZI /Od /I "lzo/include" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "TCPDELIVER_EXPORTS" /D "WIN32" /D "_MBCS" /D "ASMV" /D "ASMINF" /D "LZO_USE_ASM" /FR /Yu"StdAfx.h" /FD /GZ /c
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x417 /d "_DEBUG"
-# ADD RSC /l 0x409 /d "_DEBUG"
+# ADD RSC /l 0x409 /d "_DEBUG" /d "USE_MFC"
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 nafxcwd.lib ws2_32.lib kernel32.lib user32.lib /nologo /version:2.60 /dll /map /debug /machine:I386 /pdbtype:sept
+# ADD LINK32 /nologo /version:2.61 /dll /map /debug /machine:I386 /nodefaultlib:"oldnames" /nodefaultlib:"uuid" /pdbtype:sept
+
+!ELSEIF  "$(CFG)" == "TCPDeliver - Win32 RelSym"
+
+# PROP BASE Use_MFC 0
+# PROP BASE Use_Debug_Libraries 0
+# PROP BASE Output_Dir "RelSym"
+# PROP BASE Intermediate_Dir "RelSym"
+# PROP BASE Target_Dir ""
+# PROP Use_MFC 0
+# PROP Use_Debug_Libraries 0
+# PROP Output_Dir "RelSym"
+# PROP Intermediate_Dir "RelSym"
+# PROP Ignore_Export_Lib 0
+# PROP Target_Dir ""
+# ADD BASE CPP /nologo /MT /W4 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "TCPDELIVER_EXPORTS" /YX /FD /c
+# ADD CPP /nologo /MD /W3 /GX /Zi /O2 /Ob2 /I "lzo/include" /D "NDEBUG" /D "_WINDOWS" /D "_USRDLL" /D "TCPDELIVER_EXPORTS" /D "WIN32" /D "_MBCS" /D "ASMV" /D "ASMINF" /D "LZO_USE_ASM" /FAcs /FR /Yu"StdAfx.h" /FD /c
+# ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
+# ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
+# ADD BASE RSC /l 0x417 /d "NDEBUG"
+# ADD RSC /l 0x409 /d "NDEBUG" /d "USE_MFC"
+BSC32=bscmake.exe
+# ADD BASE BSC32 /nologo
+# ADD BSC32 /nologo
+LINK32=link.exe
+# ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /machine:I386
+# ADD LINK32 /nologo /version:2.61 /verbose /dll /map /debug /debugtype:both /machine:I386 /nodefaultlib:"oldnames" /nodefaultlib:"uuid" /pdbtype:sept
+# SUBTRACT LINK32 /incremental:yes
 
 !ENDIF
 
@@ -94,20 +120,28 @@ LINK32=link.exe
 
 # Name "TCPDeliver - Win32 Release"
 # Name "TCPDeliver - Win32 Debug"
+# Name "TCPDeliver - Win32 RelSym"
 # Begin Group "Source Files"
 
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 # Begin Source File
 
 SOURCE=.\huffman.c
+# SUBTRACT CPP /YX /Yc /Yu
+# End Source File
+# Begin Source File
+
+SOURCE=.\rle.c
+# SUBTRACT CPP /YX /Yc /Yu
+# End Source File
+# Begin Source File
+
+SOURCE=.\StdAfx.cpp
+# ADD CPP /Yc"StdAfx.h"
 # End Source File
 # Begin Source File
 
 SOURCE=.\TCPClient.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\TCPCommon.cpp
 # End Source File
 # Begin Source File
 
@@ -148,6 +182,14 @@ SOURCE=.\lzo\include\lzo\lzoconf.h
 # Begin Source File
 
 SOURCE=.\lzo\include\lzo\lzodefs.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\resource.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\rle.h
 # End Source File
 # Begin Source File
 
