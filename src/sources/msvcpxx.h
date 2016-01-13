@@ -37,6 +37,7 @@
 
 
 #include <fcntl.h>
+#include <sys/stat.h>
 
 
 // Quick replacement for msvcp*.dll as used in ImageSeq.{cpp,h}
@@ -78,7 +79,7 @@ public:
   }
 
   void close() {
-    if (file != -1) {
+    if (is_open()) {
       _close(file);
       file = -1;
     }
@@ -88,16 +89,8 @@ public:
     return (file != -1);
   };
 
-  void seekg(long offset, int mode) {
-    switch (mode) {
-      case ios_base::cur : _lseek(file, offset, SEEK_CUR); break;
-      case ios::beg      : _lseek(file, offset, SEEK_SET); break;
-      default            :                                 break;
-    }
-  };
-
   bool operator ! () {
-    return (file != -1);
+    return !is_open();
   };
 
 };
@@ -105,7 +98,7 @@ public:
 class ostream : public stream {
 public:
   void write(const void* buffer, size_t count) {
-    _write(file, buffer, count);
+    if (is_open()) _write(file, buffer, count);
   };
 
 };
@@ -113,15 +106,28 @@ public:
 class istream : public stream {
 public:
   void read(void* buffer, size_t count) {;
-    _read(file, buffer, count);
+    if (is_open())
+      _read(file, buffer, count);
+    else
+      memset(buffer, 0, count);
   }
+
+  void seekg(long offset, int mode) {
+    if (is_open()) {
+      switch (mode) {
+        case ios_base::cur : _lseek(file, offset, SEEK_CUR); break;
+        case ios::beg      : _lseek(file, offset, SEEK_SET); break;
+        default            :                                 break;
+      }
+    }
+  };
 
 };
 
 class ofstream : public ostream {
 public:
   ofstream(const char* filename, int mode) {
-    file = _open(filename, _O_WRONLY|_O_BINARY|_O_SEQUENTIAL|_O_CREAT|_O_TRUNC);
+    file = _open(filename, _O_WRONLY|_O_BINARY|_O_SEQUENTIAL|_O_CREAT|_O_TRUNC, _S_IREAD|_S_IWRITE);
   };
 
 };
