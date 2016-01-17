@@ -53,7 +53,7 @@
 				FavorSizeOrSpeed="1"
 				OmitFramePointers="true"
 				EnableFiberSafeOptimizations="true"
-				AdditionalIncludeDirectories="&quot;C:\Program Files\Microsoft Platform SDK for Windows Server 2003 R2\Samples\Multimedia\DirectShow\BaseClasses&quot;;&quot;C:\Program Files\Microsoft DirectX SDK (August 2009)\Include&quot;"
+				AdditionalIncludeDirectories="BaseClasses"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;DIRECTSHOWSOURCE_EXPORTS;_CRT_SECURE_NO_WARNINGS"
 				StringPooling="true"
 				ExceptionHandling="2"
@@ -83,14 +83,14 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="uuid.lib quartz.lib strmbase.lib winmm.lib user32.lib ole32.lib oleaut32.lib $(NOINHERIT)"
+				AdditionalDependencies="$(NOINHERIT)"
 				ShowProgress="1"
 				OutputFile=".\RelSym/DirectShowSource.dll"
 				Version="2.61"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
-				AdditionalLibraryDirectories="&quot;C:\Program Files\Microsoft Platform SDK for Windows Server 2003 R2\Samples\Multimedia\DirectShow\BaseClasses\XP32_RETAIL&quot;;&quot;C:\Program Files\Microsoft DirectX SDK (August 2009)\Lib\x86&quot;"
-				IgnoreDefaultLibraryNames="OLDNAMES;LIBCMT"
+				AdditionalLibraryDirectories=""
+				IgnoreDefaultLibraryNames=""
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile=".\RelSym/DirectShowSource.pdb"
 				GenerateMapFile="true"
@@ -164,7 +164,7 @@
 				FavorSizeOrSpeed="1"
 				OmitFramePointers="true"
 				EnableFiberSafeOptimizations="true"
-				AdditionalIncludeDirectories="&quot;C:\Program Files\Microsoft Platform SDK for Windows Server 2003 R2\Samples\Multimedia\DirectShow\BaseClasses&quot;;&quot;C:\Program Files\Microsoft DirectX SDK (August 2009)\Include&quot;"
+				AdditionalIncludeDirectories="BaseClasses"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;DIRECTSHOWSOURCE_EXPORTS;_CRT_SECURE_NO_WARNINGS"
 				StringPooling="true"
 				ExceptionHandling="2"
@@ -193,12 +193,12 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/SAFESEH"
-				AdditionalDependencies="uuid.lib quartz.lib strmbase.lib winmm.lib user32.lib ole32.lib oleaut32.lib $(NOINHERIT)"
+				AdditionalDependencies="$(NOINHERIT)"
 				OutputFile=".\Release/DirectShowSource.dll"
 				Version="2.61"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
-				AdditionalLibraryDirectories="&quot;C:\Program Files\Microsoft Platform SDK for Windows Server 2003 R2\Samples\Multimedia\DirectShow\BaseClasses\XP32_RETAIL&quot;;&quot;C:\Program Files\Microsoft DirectX SDK (August 2009)\Lib\x86&quot;"
+				AdditionalLibraryDirectories=""
 				IgnoreDefaultLibraryNames=""
 				ProgramDatabaseFile=".\Release/DirectShowSource.pdb"
 				GenerateMapFile="true"
@@ -269,7 +269,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;C:\Program Files\Microsoft Platform SDK for Windows Server 2003 R2\Samples\Multimedia\DirectShow\BaseClasses&quot;;&quot;C:\Program Files\Microsoft DirectX SDK (August 2009)\Include&quot;"
+				AdditionalIncludeDirectories="BaseClasses"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;DIRECTSHOWSOURCE_EXPORTS;_CRT_SECURE_NO_WARNINGS"
 				MinimalRebuild="true"
 				ExceptionHandling="2"
@@ -301,13 +301,13 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="uuid.lib quartz.lib strmbase.lib winmm.lib user32.lib ole32.lib oleaut32.lib $(NOINHERIT)"
+				AdditionalDependencies="$(NOINHERIT)"
 				OutputFile=".\Debug/DirectShowSource.dll"
 				Version="2.61"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
-				AdditionalLibraryDirectories="&quot;C:\Program Files\Microsoft Platform SDK for Windows Server 2003 R2\Samples\Multimedia\DirectShow\BaseClasses\XP32_RETAIL&quot;;&quot;C:\Program Files\Microsoft DirectX SDK (August 2009)\Lib\x86&quot;"
-				IgnoreDefaultLibraryNames="OLDNAMES;LIBCMT"
+				AdditionalLibraryDirectories=""
+				IgnoreDefaultLibraryNames=""
 				GenerateDebugInformation="true"
 				ProgramDatabaseFile=".\Debug/DirectShowSource.pdb"
 				GenerateMapFile="true"
@@ -365,6 +365,10 @@
 			</File>
 			<File
 				RelativePath="directshow_source.h"
+				>
+			</File>
+			<File
+				RelativePath=".\BaseClasses\streams.h"
 				>
 			</File>
 		</Filter>

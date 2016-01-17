@@ -2,6 +2,9 @@
 Microsoft Visual Studio Solution File, Format Version 9.00
 # Visual C++ Express 2005
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "DirectShowSource", "plugins\DirectShowSource\DirectShowSource_VC8.vcproj", "{212A1A86-E67B-48EC-B01B-63DC8FF40335}"
+	ProjectSection(ProjectDependencies) = postProject
+		{E8A3F6FA-AE1C-4C8E-A0B6-9C8480324EAA} = {E8A3F6FA-AE1C-4C8E-A0B6-9C8480324EAA}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SoftWire", "..\distrib\include\SoftWire\SoftWire_VC8.vcproj", "{48533428-0DBC-4CBB-8115-808462B3B4B5}"
 EndProject
@@ -25,6 +28,8 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "lzo", "plugins\TCPDeliver\lzo_VC8.vcproj", "{E6886E5D-ED93-4E46-BD8C-C205D84B8772}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "zlib", "plugins\TCPDeliver\zlib_VC8.vcproj", "{6313756C-0FBB-4F5A-BC05-68B968032D44}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "BaseClasses", "plugins\DirectShowSource\BaseClasses\baseclasses_VC8.vcproj", "{E8A3F6FA-AE1C-4C8E-A0B6-9C8480324EAA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -81,6 +86,12 @@ Global
 		{6313756C-0FBB-4F5A-BC05-68B968032D44}.Release|Win32.Build.0 = Release|Win32
 		{6313756C-0FBB-4F5A-BC05-68B968032D44}.RelSym|Win32.ActiveCfg = RelSym|Win32
 		{6313756C-0FBB-4F5A-BC05-68B968032D44}.RelSym|Win32.Build.0 = RelSym|Win32
+		{E8A3F6FA-AE1C-4C8E-A0B6-9C8480324EAA}.Debug|Win32.ActiveCfg = Debug|Win32
+		{E8A3F6FA-AE1C-4C8E-A0B6-9C8480324EAA}.Debug|Win32.Build.0 = Debug|Win32
+		{E8A3F6FA-AE1C-4C8E-A0B6-9C8480324EAA}.Release|Win32.ActiveCfg = Release|Win32
+		{E8A3F6FA-AE1C-4C8E-A0B6-9C8480324EAA}.Release|Win32.Build.0 = Release|Win32
+		{E8A3F6FA-AE1C-4C8E-A0B6-9C8480324EAA}.RelSym|Win32.ActiveCfg = RelSym|Win32
+		{E8A3F6FA-AE1C-4C8E-A0B6-9C8480324EAA}.RelSym|Win32.Build.0 = RelSym|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
