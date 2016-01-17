@@ -33,6 +33,15 @@
 // import and export plugins, or graphical user interfaces.
 
 
+#pragma comment(linker, "/NODEFAULTLIB:OLDNAMES")
+
+#pragma comment (lib, "uuid.lib")
+#pragma comment (lib, "quartz.lib")
+#pragma comment (lib, "winmm.lib")
+#pragma comment (lib, "user32.lib")
+#pragma comment (lib, "ole32.lib")
+#pragma comment (lib, "oleaut32.lib")
+
 #include "directshow_source.h"
 
 #define DSS_VERSION "2.6.1"
