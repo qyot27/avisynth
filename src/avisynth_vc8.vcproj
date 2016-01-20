@@ -48,7 +48,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				PreprocessorDefinitions="_DEBUG;DEBUG;INC_OLE2;STRICT;WIN32;_WIN32;_MT;_DLL;_USRDLL;AVISYNTH_C_EXPORTS;AVISYNTH_CORE;_CRT_SECURE_NO_WARNINGS"
+				PreprocessorDefinitions="_DEBUG;DEBUG;INC_OLE2;STRICT;WIN32;_WIN32;_MT;_DLL;_USRDLL;AVISYNTH_C_EXPORTS;AVISYNTH_CORE;_CRT_SECURE_NO_WARNINGS;AVS_BUILD#VC2005Exp"
 				MinimalRebuild="true"
 				ExceptionHandling="2"
 				BasicRuntimeChecks="3"
@@ -73,7 +73,7 @@
 			/>
 			<Tool
 				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="_DEBUG"
+				PreprocessorDefinitions="_DEBUG;AVS_BUILD=VC2005Exp"
 				Culture="1033"
 			/>
 			<Tool
@@ -163,7 +163,7 @@
 				FavorSizeOrSpeed="1"
 				OmitFramePointers="true"
 				EnableFiberSafeOptimizations="true"
-				PreprocessorDefinitions="NDEBUG;INC_OLE2;STRICT;WIN32;_WIN32;_MT;_DLL;_USRDLL;AVISYNTH_C_EXPORTS;AVISYNTH_CORE;_CRT_SECURE_NO_WARNINGS"
+				PreprocessorDefinitions="NDEBUG;INC_OLE2;STRICT;WIN32;_WIN32;_MT;_DLL;_USRDLL;AVISYNTH_C_EXPORTS;AVISYNTH_CORE;_CRT_SECURE_NO_WARNINGS;AVS_BUILD#VC2005Exp"
 				StringPooling="true"
 				ExceptionHandling="2"
 				RuntimeLibrary="2"
@@ -186,7 +186,7 @@
 			/>
 			<Tool
 				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="NDEBUG"
+				PreprocessorDefinitions="NDEBUG;AVS_BUILD=VC2005Exp"
 				Culture="1033"
 			/>
 			<Tool
@@ -280,7 +280,7 @@
 				FavorSizeOrSpeed="1"
 				OmitFramePointers="true"
 				EnableFiberSafeOptimizations="true"
-				PreprocessorDefinitions="NDEBUG;INC_OLE2;STRICT;WIN32;_WIN32;_MT;_DLL;_USRDLL;AVISYNTH_C_EXPORTS;AVISYNTH_CORE;_CRT_SECURE_NO_WARNINGS"
+				PreprocessorDefinitions="NDEBUG;INC_OLE2;STRICT;WIN32;_WIN32;_MT;_DLL;_USRDLL;AVISYNTH_C_EXPORTS;AVISYNTH_CORE;_CRT_SECURE_NO_WARNINGS;AVS_BUILD#VC2005Exp"
 				StringPooling="true"
 				ExceptionHandling="2"
 				RuntimeLibrary="2"
@@ -301,7 +301,7 @@
 			/>
 			<Tool
 				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="NDEBUG"
+				PreprocessorDefinitions="NDEBUG;AVS_BUILD=VC2005Exp"
 				Culture="1033"
 			/>
 			<Tool

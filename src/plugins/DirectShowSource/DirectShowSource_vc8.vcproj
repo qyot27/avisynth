@@ -76,7 +76,7 @@
 			/>
 			<Tool
 				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="NDEBUG"
+				PreprocessorDefinitions="NDEBUG;AVS_BUILD=VC2005Exp"
 				Culture="1033"
 			/>
 			<Tool
@@ -186,7 +186,7 @@
 			/>
 			<Tool
 				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="NDEBUG"
+				PreprocessorDefinitions="NDEBUG;AVS_BUILD=VC2005Exp"
 				Culture="1033"
 			/>
 			<Tool
@@ -296,7 +296,7 @@
 			/>
 			<Tool
 				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="_DEBUG"
+				PreprocessorDefinitions="_DEBUG;AVS_BUILD=VC2005Exp"
 				Culture="1033"
 			/>
 			<Tool

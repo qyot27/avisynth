@@ -1,4 +1,14 @@
 //
+#ifndef APSTUDIO_INVOKED
+#ifndef AVS_BUILD
+#error Need /D "AVS_BUILD=${build_id}"
+#endif
+#endif
+
+#define STRFY(macro) _STRFY(macro)
+#define _STRFY(string) #string
+#define _AVS_BUILD STRFY(AVS_BUILD) "\0"
+//
 #define APSTUDIO_READONLY_SYMBOLS 0
 
 #include "winresrc.h"
@@ -56,14 +66,17 @@ BEGIN
     BEGIN
       VALUE "Comments", "Homepage: http://www.avisynth.org\0"
       VALUE "CompanyName", "avisynth.org\0"
-      VALUE "FileDescription", "Avisynth TCPDeliver pluggin\0"
+      VALUE "FileDescription", "Avisynth TCPDeliver plugin\0"
       VALUE "FileVersion", "2, 6, 1, 0\0"
-      VALUE "InternalName", "TCPDeliver\0"
-      VALUE "LegalCopyright", "Copyright © 2004-20115 Klaus Post. \0"
+      VALUE "InternalName", "TCPDeliver 2.6.1\0"
+      VALUE "LegalCopyright", "Copyright © 2004-2016 Klaus Post. \0"
       VALUE "LegalTrademarks", "Released under GPL.\0"
       VALUE "OriginalFilename", "TCPDeliver.dll\0"
+//    VALUE "PrivateBuild", " \0"
       VALUE "ProductName", "AviSynth 2.6 TCPDeliver\0"
       VALUE "ProductVersion", "2, 6, 1, 0\0"
+//    VALUE "SpecialBuild", " \0"
+      VALUE "BuildEnvironment", _AVS_BUILD
     END
   END
   BLOCK "VarFileInfo"

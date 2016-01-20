@@ -36,9 +36,16 @@
 #ifndef __Internal_H__
 #define __Internal_H__
 
+#ifndef AVS_BUILD
+#error Need /DAVS_BUILD#${build_id}
+#endif
+
+#define STRFY(macro) _STRFY(macro)
+#define _STRFY(string) #string
+
 #define AVS_VERSION 2.61
-#define AVS_VERSTR "AviSynth 2.61, build:"__DATE__" ["__TIME__"]"
-#define AVS_COPYRIGHT "\n\xA9 2000-2015 Ben Rudiak-Gould, et al.\nhttp://www.avisynth.nl"
+#define AVS_VERSTR "AviSynth " STRFY(AVS_VERSION) ", build:"__DATE__" ["__TIME__"] " STRFY(AVS_BUILD)
+#define AVS_COPYRIGHT "\n\xA9 2000-2016 Ben Rudiak-Gould, et al.\nhttp://www.avisynth.nl"
 
 extern const char _AVS_VERSTR[], _AVS_COPYRIGHT[];
 

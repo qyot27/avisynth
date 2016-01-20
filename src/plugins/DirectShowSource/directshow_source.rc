@@ -1,3 +1,14 @@
+//
+#ifndef APSTUDIO_INVOKED
+#ifndef AVS_BUILD
+#error Need /D "AVS_BUILD=${build_id}"
+#endif
+#endif
+
+#define STRFY(macro) _STRFY(macro)
+#define _STRFY(string) #string
+#define _AVS_BUILD STRFY(AVS_BUILD) "\0"
+//
 //Microsoft Developer Studio generated resource script.
 //
 #include "resource.h"
@@ -50,16 +61,17 @@ BEGIN
         BEGIN
             VALUE "Comments", "Homepage: http://www.avisynth.org\0"
             VALUE "CompanyName", "The Public\0"
-            VALUE "FileDescription", "Avisynth DirectShow Reader pluggin\0"
+            VALUE "FileDescription", "Avisynth DirectShow Reader plugin\0"
             VALUE "FileVersion", "2, 6, 1, 0\0"
             VALUE "InternalName", "DirectShowSource 2.6.1\0"
-            VALUE "LegalCopyright", "© 2000-2015 Ben Rudiak-Gould and others\0"
+            VALUE "LegalCopyright", "© 2000-2016 Ben Rudiak-Gould and others\0"
 //          VALUE "LegalTrademarks", " \0"
             VALUE "OriginalFilename", "DirectShowSource.dll\0"
 //          VALUE "PrivateBuild", " \0"
-            VALUE "ProductName", "Avisynth 2.6\0"
+            VALUE "ProductName", "Avisynth 2.6 DirectShowSource\0"
             VALUE "ProductVersion", "2, 6, 1, 0\0"
 //          VALUE "SpecialBuild", " \0"
+            VALUE "BuildEnvironment", _AVS_BUILD
         END
     END
     BLOCK "VarFileInfo"

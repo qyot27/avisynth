@@ -48,7 +48,7 @@ RSC=rc.exe
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x417 /d "NDEBUG"
-# ADD RSC /l 0x409 /d "NDEBUG" /d "USE_MFC"
+# ADD RSC /l 0x409 /d "NDEBUG" /d "USE_MFC" /d "AVS_BUILD=VC6"
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
@@ -79,7 +79,7 @@ PostBuild_Cmds=..\..\..\distrib\upx -9 release\TCPDeliver.dll
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x417 /d "_DEBUG"
-# ADD RSC /l 0x409 /d "_DEBUG" /d "USE_MFC"
+# ADD RSC /l 0x409 /d "_DEBUG" /d "USE_MFC" /d "AVS_BUILD=VC6"
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
@@ -105,7 +105,7 @@ LINK32=link.exe
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x417 /d "NDEBUG"
-# ADD RSC /l 0x409 /d "NDEBUG" /d "USE_MFC"
+# ADD RSC /l 0x409 /d "NDEBUG" /d "USE_MFC" /d "AVS_BUILD=VC6"
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo

@@ -1,9 +1,15 @@
 !packhdr tempfile.exe "upx --best --q tempfile.exe"
 
-!DEFINE ISSUE 6
-!DEFINE VERSION 2.6.0
+; !DEFINE AVS_BUILD "VC6"
+!DEFINE AVS_BUILD "VC2005Exp"
+; !DEFINE AVS_BUILD "VC2008Exp"
+; !DEFINE AVS_BUILD "VC2010Exp"
+!DEFINE DOCFILE
 
-!DEFINE /date DATE "%y%m%d"
+!DEFINE ISSUE 0
+!DEFINE VERSION 2.6.1
+
+!DEFINE /date DATE "%Y%m%d"
 
 !DEFINE AVS_DefaultLicenceFile "gpl.txt"
 
@@ -36,11 +42,13 @@ VIProductVersion "${VERSION}.${ISSUE}"
 VIAddVersionKey "ProductName"      "Avisynth 2.6"
 VIAddVersionKey "Comments"         "Homepage: http://www.avisynth.org"
 VIAddVersionKey "CompanyName"      "The Public"
-VIAddVersionKey "LegalCopyright"   "© 2000-2015 Ben Rudiak-Gould and others"
+VIAddVersionKey "LegalCopyright"   "© 2000-2016 Ben Rudiak-Gould and others"
 VIAddVersionKey "FileDescription"  "Avisynth installer"
 VIAddVersionKey "FileVersion"      "${VERSION}.${ISSUE}"
 VIAddVersionKey "ProductVersion"   "${VERSION}"
-VIAddVersionKey "OriginalFilename" "AviSynth_${DATE}.exe"
+VIAddVersionKey "OriginalFilename" "AviSynth_${DATE}_${AVS_BUILD}.exe"
+
+VIAddVersionKey "BuildEnvironment"   "${AVS_BUILD}"
 
 ;VIAddVersionKey "InternalName"     ""
 ;VIAddVersionKey "LegalTrademarks"  ""
@@ -202,10 +210,10 @@ SetCompressor /solid lzma
 
 
 NAME "AviSynth"
-BRANDINGTEXT "AviSynth ${VERSION} -- [${DATE}]"
-OutFile "AviSynth_${DATE}.exe"
+BRANDINGTEXT "AviSynth ${VERSION} -- [${DATE}] -- [${AVS_BUILD}]"
+OutFile "AviSynth_${DATE}_${AVS_BUILD}.exe"
 SetOverwrite ON
-Caption "AviSynth ${VERSION}"
+Caption "AviSynth ${VERSION} -- [${AVS_BUILD}]"
 ShowInstDetails show
 CRCCheck ON
 
@@ -233,9 +241,9 @@ Section $(SystemInstall_Text) SystemInstall
   ${File} "..\src\release\AviSynth.dll"
   ${File} "bin\devil.dll"
 
-IfFileExists "$SYSDIR\msvcp60.dll" msvc60_exists
-  ${File} "bin\msvcp60.dll"
-msvc60_exists:
+; IfFileExists "$SYSDIR\msvcp60.dll" msvc60_exists
+;   ${File} "bin\msvcp60.dll"
+; msvc60_exists:
 
 IfErrors 0 dll_ok
   MessageBox MB_OK $(InUseMsg_Text)
@@ -277,6 +285,8 @@ plug_ok:
   WriteRegStr HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\AviSynth" "DisplayIcon" "$SYSDIR\AviSynth.dll,0"
   WriteRegStr HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\AviSynth" "DisplayVersion" "${VERSION}.${ISSUE}"
   WriteRegStr HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\AviSynth" "URLInfoAbout" "http://avisynth.org/"
+
+  WriteRegStr HKLM "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\AviSynth" "Comments" "Avisynth ${VERSION}.${ISSUE} -- [${AVS_BUILD}]"
 
 ; Other Add/Remove Software registry keys
 
@@ -662,7 +672,7 @@ Section /o  $(Associate1_Text) Associate1
 SectionEnd
 
 Section /o  $(Associate2_Text) Associate2
-  SectionIn 1 4
+  SectionIn 4
   StrCmp $AdminInstall "No" +2
   WriteRegStr HKCR "avsfile\shell\play\command" "" '"$PROGRAMFILES\Windows Media Player\mplayer2.exe" /Play "%L"'
 

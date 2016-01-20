@@ -1,3 +1,14 @@
+//
+#ifndef APSTUDIO_INVOKED
+#ifndef AVS_BUILD
+#error Need /D "AVS_BUILD=${build_id}"
+#endif
+#endif
+
+#define STRFY(macro) _STRFY(macro)
+#define _STRFY(string) #string
+#define _AVS_BUILD STRFY(AVS_BUILD) "\0"
+//
 //Microsoft Developer Studio generated resource script.
 //
 #include "resource.h"
@@ -79,13 +90,14 @@ BEGIN
             VALUE "FileDescription", "Avisynth video processing scripting language\0"
             VALUE "FileVersion", "2, 6, 1, 0\0"
             VALUE "InternalName", "AviSynth 2.6.1\0"
-            VALUE "LegalCopyright", "© 2000-2015 Ben Rudiak-Gould and others\0"
+            VALUE "LegalCopyright", "© 2000-2016 Ben Rudiak-Gould and others\0"
 //          VALUE "LegalTrademarks", "\0"
             VALUE "OriginalFilename", "avisynth.dll\0"
 //          VALUE "PrivateBuild", "\0"
             VALUE "ProductName", "Avisynth 2.6\0"
             VALUE "ProductVersion", "2, 6, 1, 0\0"
 //          VALUE "SpecialBuild", "\0"
+            VALUE "BuildEnvironment", _AVS_BUILD
         END
     END
     BLOCK "VarFileInfo"
