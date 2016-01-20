@@ -12,7 +12,7 @@ LangString AVS_Full                 ${AvsLang} "フル"
 
 LangString FINISHPAGE_TEXT          ${AvsLang} "最新ニュースとサポートについては AviSynth Web サイトをご覧ください。"
 LangString COMPONENT_TEXT           ${AvsLang} "AviSynth - 今日から使える Premiere フレームサービングツール$\n\
-                                                Copyright (c) 2000 - 2008."
+                                                Copyright (c) 2000 - 2016."
 
 LangString Frameserving_Text        ${AvsLang} "AviSynth 基本ファイル（必須）"
 LangString SystemInstall_Text       ${AvsLang} "システムディレクトリにインストール"

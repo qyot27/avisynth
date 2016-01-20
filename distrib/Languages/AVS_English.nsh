@@ -12,7 +12,7 @@ LangString AVS_Full                 ${AvsLang} "Full"
 
 LangString FINISHPAGE_TEXT          ${AvsLang} "Visit the AviSynth website for the latest news and support"
 LangString COMPONENT_TEXT           ${AvsLang} "AviSynth - the premiere frameserving tool available today.$\n\
-                                                Copyright © 2000 - 2008."
+                                                Copyright © 2000 - 2016."
 
 LangString Frameserving_Text        ${AvsLang} "AviSynth Base (required)"
 LangString SystemInstall_Text       ${AvsLang} "Install files in System directory"

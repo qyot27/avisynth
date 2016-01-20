@@ -12,7 +12,7 @@ LangString AVS_Full                 ${AvsLang} "Πλήρης"
 
 LangString FINISHPAGE_TEXT          ${AvsLang} "Επισκεφτείτε την ιστοσελίδα του AviSynth για τις πιο πρόσφατες ειδήσεις και υποστήριξη"
 LangString COMPONENT_TEXT           ${AvsLang} "AviSynth - Το πρώτο εργαλείο εξυπηρέτησης πλαισίων βίντεο διαθέσιμο σήμερα.$\n\
-                                                Copyright © 2000 - 2008."
+                                                Copyright © 2000 - 2016."
 
 LangString Frameserving_Text        ${AvsLang} "AviSynth Βασική (απαιτείται)"
 LangString SystemInstall_Text       ${AvsLang} "Εγκατάσταση αρχείων στο φάκελο Συστήματος"

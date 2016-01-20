@@ -12,7 +12,7 @@ LangString AVS_Full                 ${AvsLang} "Plná"
 
 LangString FINISHPAGE_TEXT          ${AvsLang} "Technickou podporu a novinky naleznete na webových stránkách AviSynthu"
 LangString COMPONENT_TEXT           ${AvsLang} "AviSynth - pøední nástroj pro frameserving dnešních dnù.$\n\
-                                                Copyright © 2000 - 2008."
+                                                Copyright © 2000 - 2016."
 
 LangString Frameserving_Text        ${AvsLang} "Základ AviSynthu (nezbytné)"
 LangString SystemInstall_Text       ${AvsLang} "Nainstalovat soubory do systémové složky"
