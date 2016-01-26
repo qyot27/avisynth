@@ -82,7 +82,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				UseUnicodeResponseFiles="false"
-				AdditionalDependencies="../distrib/lib/DevIL.lib Delayimp.lib  msacm32.lib vfw32.lib advapi32.lib user32.lib gdi32.lib ole32.lib winmm.lib $(NOINHERIT)"
+				AdditionalDependencies="../distrib/lib/DevIL.lib Delayimp.lib nothrownew.obj msacm32.lib vfw32.lib advapi32.lib user32.lib gdi32.lib ole32.lib winmm.lib $(NOINHERIT)"
 				OutputFile=".\Debug/avisynth.dll"
 				SuppressStartupBanner="true"
 				IgnoreDefaultLibraryNames="OLDNAMES;MSVCPRTD"
@@ -194,7 +194,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="../distrib/lib/DevIL.lib Delayimp.lib  msacm32.lib vfw32.lib advapi32.lib user32.lib gdi32.lib ole32.lib winmm.lib $(NOINHERIT)"
+				AdditionalDependencies="../distrib/lib/DevIL.lib Delayimp.lib nothrownew.obj msacm32.lib vfw32.lib advapi32.lib user32.lib gdi32.lib ole32.lib winmm.lib $(NOINHERIT)"
 				ShowProgress="1"
 				OutputFile=".\RelSym/avisynth.dll"
 				Version="2.61"
@@ -310,7 +310,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/SAFESEH"
-				AdditionalDependencies="../distrib/lib/DevIL.lib Delayimp.lib  msacm32.lib vfw32.lib advapi32.lib user32.lib gdi32.lib ole32.lib winmm.lib $(NOINHERIT)"
+				AdditionalDependencies="../distrib/lib/DevIL.lib Delayimp.lib nothrownew.obj msacm32.lib vfw32.lib advapi32.lib user32.lib gdi32.lib ole32.lib winmm.lib $(NOINHERIT)"
 				OutputFile=".\Release/avisynth.dll"
 				Version="2.61"
 				LinkIncremental="1"
