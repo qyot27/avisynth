@@ -41,6 +41,8 @@
 
 #include <float.h>
 
+#include <new>
+
 
 #ifndef _DEBUG
 // Release mode logging
@@ -1163,6 +1165,14 @@ HRESULT CAVIStreamSynth::Read2(LONG lStart, LONG lSamples, LPVOID lpBuffer, LONG
 	    throw;
 	  else
 	    ReadHelper(lpBuffer, lStart, lSamples);
+    }
+    catch (std::bad_alloc) {
+      parent->MakeErrorStream("Avisynth: std::bad_alloc exception."
+		                      " Should not happen, faulty Avisynth build!");
+      if (fAudio)
+	    throw;
+	  else
+        ReadHelper(lpBuffer, lStart, lSamples);
     }
     catch (...) {
       parent->MakeErrorStream("Avisynth: unknown exception");
