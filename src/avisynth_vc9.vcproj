@@ -57,6 +57,7 @@
 				RuntimeLibrary="3"
 				BufferSecurityCheck="true"
 				EnableFunctionLevelLinking="true"
+				EnableEnhancedInstructionSet="2"
 				RuntimeTypeInfo="false"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="stdafx.h"
@@ -83,7 +84,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				UseUnicodeResponseFiles="false"
-				AdditionalDependencies="../distrib/lib/DevIL.lib Delayimp.lib  msacm32.lib vfw32.lib advapi32.lib user32.lib gdi32.lib ole32.lib winmm.lib $(NOINHERIT)"
+				AdditionalDependencies="../distrib/lib/DevIL.lib Delayimp.lib nothrownew.obj msacm32.lib vfw32.lib advapi32.lib user32.lib gdi32.lib ole32.lib winmm.lib $(NOINHERIT)"
 				OutputFile=".\Debug/avisynth.dll"
 				SuppressStartupBanner="true"
 				IgnoreDefaultLibraryNames="OLDNAMES;MSVCPRTD"
@@ -168,6 +169,7 @@
 				ExceptionHandling="2"
 				RuntimeLibrary="2"
 				BufferSecurityCheck="false"
+				EnableEnhancedInstructionSet="2"
 				RuntimeTypeInfo="false"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="stdafx.h"
@@ -194,7 +196,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="../distrib/lib/DevIL.lib Delayimp.lib  msacm32.lib vfw32.lib advapi32.lib user32.lib gdi32.lib ole32.lib winmm.lib $(NOINHERIT)"
+				AdditionalDependencies="../distrib/lib/DevIL.lib Delayimp.lib nothrownew.obj msacm32.lib vfw32.lib advapi32.lib user32.lib gdi32.lib ole32.lib winmm.lib $(NOINHERIT)"
 				ShowProgress="1"
 				OutputFile=".\RelSym/avisynth.dll"
 				Version="2.61"
@@ -253,8 +255,6 @@
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
-				CommandLine="..\distrib\upx -9 release\avisynth.dll&#x0D;&#x0A;"
-				Outputs="$(SystemRoot)\system32\avisynth.dll"
 			/>
 			<Tool
 				Name="VCXMLDataGeneratorTool"
@@ -284,6 +284,7 @@
 				ExceptionHandling="2"
 				RuntimeLibrary="2"
 				BufferSecurityCheck="false"
+				EnableEnhancedInstructionSet="2"
 				RuntimeTypeInfo="false"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="stdafx.h"
@@ -309,7 +310,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/SAFESEH"
-				AdditionalDependencies="../distrib/lib/DevIL.lib Delayimp.lib  msacm32.lib vfw32.lib advapi32.lib user32.lib gdi32.lib ole32.lib winmm.lib $(NOINHERIT)"
+				AdditionalDependencies="../distrib/lib/DevIL.lib Delayimp.lib nothrownew.obj msacm32.lib vfw32.lib advapi32.lib user32.lib gdi32.lib ole32.lib winmm.lib $(NOINHERIT)"
 				OutputFile=".\Release/avisynth.dll"
 				Version="2.61"
 				LinkIncremental="1"
@@ -348,7 +349,8 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine=""
+				Description="Compress the .DLL"
+				CommandLine="..\distrib\upx -9 release\avisynth.dll"
 			/>
 		</Configuration>
 	</Configurations>
