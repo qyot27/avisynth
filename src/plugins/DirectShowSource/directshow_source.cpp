@@ -35,6 +35,9 @@
 
 #pragma comment(linker, "/NODEFAULTLIB:OLDNAMES")
 
+#ifdef _DEBUG
+#pragma comment (lib, "advapi32.lib")
+#endif
 #pragma comment (lib, "uuid.lib")
 #pragma comment (lib, "quartz.lib")
 #pragma comment (lib, "winmm.lib")
