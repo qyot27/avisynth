@@ -401,8 +401,7 @@ AVSValue ExpFunctionCall::Call(IScriptEnvironment* env)
     for (int a=0; a<arg_expr_count; ++a)
       args[a+1] = arg_exprs[a]->Evaluate(env);
   }
-  catch (...)
-  {
+  catch (...) {
     delete[] args;
     throw;
   }
@@ -412,27 +411,24 @@ AVSValue ExpFunctionCall::Call(IScriptEnvironment* env)
     delete[] args;
     return result;
   }
-  catch (IScriptEnvironment::NotFound) {
-    // if that fails, try with implicit "last" (except when OOP notation was used)
-    if (!oop_notation) {
-      try {
-        args[0] = env->GetVar("last");
-        result = env->Invoke(name, AVSValue(args, arg_expr_count+1), arg_expr_names);
-        delete[] args;
-        return result;
-      }
-      catch (IScriptEnvironment::NotFound) { /* see below */ }
-      catch (...)
-      {
-        delete[] args;
-        throw;
-      }
-    }
-  }
-  catch (...)
-  {
+  catch (IScriptEnvironment::NotFound) { /* see below */ }
+  catch (...) {
     delete[] args;
     throw;
+  }
+  // if that fails, try with implicit "last" (except when OOP notation was used)
+  if (!oop_notation) {
+    try {
+      args[0] = env->GetVar("last");
+      result = env->Invoke(name, AVSValue(args, arg_expr_count+1), arg_expr_names);
+      delete[] args;
+      return result;
+    }
+    catch (IScriptEnvironment::NotFound) { /* see below */ }
+    catch (...) {
+      delete[] args;
+      throw;
+    }
   }
   delete[] args;
   env->ThrowError(env->FunctionExists(name) ? "Script error: Invalid arguments to function \"%s\""
