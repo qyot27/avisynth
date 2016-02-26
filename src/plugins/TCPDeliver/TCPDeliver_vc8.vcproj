@@ -82,7 +82,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="$(NOINHERIT)"
+				AdditionalDependencies="nothrownew.obj $(NOINHERIT)"
 				OutputFile=".\Debug/TCPDeliver.dll"
 				Version="2.61"
 				LinkIncremental="2"
@@ -192,7 +192,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/SAFESEH"
-				AdditionalDependencies="$(NOINHERIT)"
+				AdditionalDependencies="nothrownew.obj $(NOINHERIT)"
 				OutputFile=".\Release/TCPDeliver.dll"
 				Version="2.61"
 				LinkIncremental="1"
@@ -303,7 +303,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="$(NOINHERIT)"
+				AdditionalDependencies="nothrownew.obj $(NOINHERIT)"
 				ShowProgress="1"
 				OutputFile=".\RelSym/TCPDeliver.dll"
 				Version="2.61"

@@ -84,7 +84,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="$(NOINHERIT)"
+				AdditionalDependencies="nothrownew.obj $(NOINHERIT)"
 				ShowProgress="1"
 				OutputFile=".\RelSym/DirectShowSource.dll"
 				Version="2.61"
@@ -195,7 +195,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/SAFESEH"
-				AdditionalDependencies="$(NOINHERIT)"
+				AdditionalDependencies="nothrownew.obj $(NOINHERIT)"
 				OutputFile=".\Release/DirectShowSource.dll"
 				Version="2.61"
 				LinkIncremental="1"
@@ -304,7 +304,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="$(NOINHERIT)"
+				AdditionalDependencies="nothrownew.obj $(NOINHERIT)"
 				OutputFile=".\Debug/DirectShowSource.dll"
 				Version="2.61"
 				LinkIncremental="2"
