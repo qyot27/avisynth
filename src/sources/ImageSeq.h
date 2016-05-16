@@ -45,11 +45,11 @@
 #include "msvcpXX.h"  // Quick replacement for msvcp*.dll
 
 
-class ImageWriter : public GenericVideoFilter 
+class ImageWriter : public GenericVideoFilter
 /**
   * Class to write video as a sequence of images
  **/
-{  
+{
 public:
   ImageWriter(PClip _child, const char * _base_name, const int _start, const int _end, const char * _ext, bool _info, IScriptEnvironment* env);
   ~ImageWriter();
@@ -61,7 +61,7 @@ private:
   void fileWrite(ostream & file, const BYTE * srcPtr, const int pitch, const int row_size, const int height);
 
   bool info;
-  
+
   char base_name[MAX_PATH + 1];
   const char * ext;
   int start;
@@ -84,20 +84,20 @@ public:
   ~ImageReader();
 
   PVideoFrame __stdcall GetFrame(int n, IScriptEnvironment* env);
-    
+
   void __stdcall GetAudio(void* buf, __int64 start, __int64 count, IScriptEnvironment* env) {}
   const VideoInfo& __stdcall GetVideoInfo() { return vi; }
   bool __stdcall GetParity(int n) { return false; }
   int __stdcall SetCacheHints(int cachehints,int frame_range) { return 0; };
-  
-  
+
+
   static AVSValue __cdecl Create(AVSValue args, void*, IScriptEnvironment* env);
   static AVSValue __cdecl CreateAnimated(AVSValue args, void*, IScriptEnvironment* env);
 
 private:
   void fileRead(istream & file, BYTE * dstPtr, const int pitch, const int row_size, const int height);
-  void ImageReader::BlankFrame(PVideoFrame & frame);
-  void ImageReader::BlankApplyMessage(PVideoFrame & frame, const char * text, IScriptEnvironment * env);
+  void BlankFrame(PVideoFrame & frame);
+  void BlankApplyMessage(PVideoFrame & frame, const char * text, IScriptEnvironment * env);
   bool checkProperties(ifstream & file, PVideoFrame & frame, IScriptEnvironment * env);
 
   char base_name[MAX_PATH + 1];
@@ -111,7 +111,7 @@ private:
   char filename[MAX_PATH + 1];
   bool should_flip;
   int  framecopies;
-      
+
   BITMAPFILEHEADER fileHeader;
   BITMAPINFOHEADER infoHeader;
 };
