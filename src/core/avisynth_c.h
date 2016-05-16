@@ -320,7 +320,10 @@ AVSC_API(int, avs_bits_per_pixel)(const AVS_VideoInfo * p);
 
 AVSC_API(int, avs_bytes_from_pixels)(const AVS_VideoInfo * p, int pixels);
 
-AVSC_API(int, avs_row_size)(const AVS_VideoInfo * p, int plane=0);
+AVSC_API(int, avs_row_size_p)(const AVS_VideoInfo * p, int plane);
+
+AVSC_INLINE int avs_row_size(const AVS_VideoInfo * p)
+        { return avs_row_size_p(p, 0); }
 
 AVSC_API(int, avs_bmp_size)(const AVS_VideoInfo * vi);
 
@@ -787,7 +790,7 @@ struct AVS_Library {
   AVSC_DECLARE_FUNC(avs_get_plane_height_subsampling);
   AVSC_DECLARE_FUNC(avs_bits_per_pixel);
   AVSC_DECLARE_FUNC(avs_bytes_from_pixels);
-  AVSC_DECLARE_FUNC(avs_row_size);
+  AVSC_DECLARE_FUNC(avs_row_size_p);
   AVSC_DECLARE_FUNC(avs_bmp_size);
   AVSC_DECLARE_FUNC(avs_get_pitch_p);
   AVSC_DECLARE_FUNC(avs_get_row_size_p);
@@ -866,7 +869,7 @@ AVSC_INLINE AVS_Library * avs_load_library() {
   AVSC_LOAD_FUNC(avs_get_plane_height_subsampling);
   AVSC_LOAD_FUNC(avs_bits_per_pixel);
   AVSC_LOAD_FUNC(avs_bytes_from_pixels);
-  AVSC_LOAD_FUNC(avs_row_size);
+  AVSC_LOAD_FUNC(avs_row_size_p);
   AVSC_LOAD_FUNC(avs_bmp_size);
   AVSC_LOAD_FUNC(avs_get_pitch_p);
   AVSC_LOAD_FUNC(avs_get_row_size_p);
