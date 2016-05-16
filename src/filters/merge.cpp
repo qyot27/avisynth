@@ -192,7 +192,7 @@ MergeLuma::MergeLuma(PClip _child, PClip _clip, float _weight, int _test, IScrip
     env->ThrowError("MergeLuma: YUV data only (no RGB); use ConvertToYUY2 or ConvertToYV12");
 
   if (!vi.IsSameColorspace(vi2)) {  // Since this is luma we allow all planar formats to be merged.
-    if (vi.IsPlanar() == vi2.IsPlanar()) {
+    if (!(vi.IsPlanar() && vi2.IsPlanar())) {
       env->ThrowError("MergeLuma: YUV data is not same type. YUY2 and planar images doesn't mix.");
     }
   }
