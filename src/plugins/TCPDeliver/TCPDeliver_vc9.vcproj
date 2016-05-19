@@ -58,6 +58,7 @@
 				RuntimeLibrary="3"
 				BufferSecurityCheck="true"
 				EnableFunctionLevelLinking="true"
+				EnableEnhancedInstructionSet="2"
 				RuntimeTypeInfo="false"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="StdAfx.h"
@@ -167,6 +168,7 @@
 				ExceptionHandling="2"
 				RuntimeLibrary="2"
 				BufferSecurityCheck="false"
+				EnableEnhancedInstructionSet="2"
 				RuntimeTypeInfo="false"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="StdAfx.h"
@@ -228,6 +230,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
+				Description="Compress the .DLL"
 				CommandLine="..\..\..\distrib\upx -9 release\TCPDeliver.dll"
 			/>
 		</Configuration>
@@ -276,6 +279,7 @@
 				ExceptionHandling="2"
 				RuntimeLibrary="2"
 				BufferSecurityCheck="false"
+				EnableEnhancedInstructionSet="2"
 				RuntimeTypeInfo="false"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="StdAfx.h"
