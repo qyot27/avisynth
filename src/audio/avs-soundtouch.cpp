@@ -61,19 +61,15 @@ private:
 
 public:
 static AVSValue __cdecl Create(AVSValue args, void*, IScriptEnvironment* env);
+static AVSValue __cdecl CreateRational(AVSValue args, void*, IScriptEnvironment* env);
 
 
-AVSsoundtouch(PClip _child, float _tempo, float _rate, float _pitch, const AVSValue* args, IScriptEnvironment* env)
+AVSsoundtouch(PClip _child, double _tempo, double _rate, double _pitch, const AVSValue* args, IScriptEnvironment* env)
 : GenericVideoFilter(ConvertAudio::Create(_child, SAMPLE_FLOAT, SAMPLE_FLOAT))
 {
-  _tempo /= 100.0f;
-  _rate  /= 100.0f;
-  _pitch /= 100.0f;
-
   dstbuffer = new SFLOAT[BUFFERSIZE * vi.AudioChannels()];
 
-  sample_multiplier  = _tempo / _pitch;  // Do it the same way the library does it!
-  sample_multiplier *= _pitch * _rate;
+  sample_multiplier  = (long double)_tempo * (long double)_rate;
 
   sampler = new SoundTouch();
 
@@ -120,7 +116,7 @@ void __stdcall AVSsoundtouch::GetAudio(void* buf, __int64 start, __int64 count, 
   if (start != next_sample) {  // Reset on seek
     sampler->clear();
     next_sample = start;
-    inputReadOffset = (__int64)(sample_multiplier * start);  // Reset at new read position (NOT sample exact :( ).
+    inputReadOffset = (__int64)(sample_multiplier * start);  // Reset at new read position.
     dst_samples_filled=0;
   }
 
@@ -176,14 +172,30 @@ void __stdcall AVSsoundtouch::GetAudio(void* buf, __int64 start, __int64 count, 
 
 };
 
+// Percentage float arguments.
 AVSValue __cdecl AVSsoundtouch::Create(AVSValue args, void*, IScriptEnvironment* env) {
 	try {	// HIDE DAMN SEH COMPILER BUG!!!
   return new AVSsoundtouch(
       args[0].AsClip(),
-      args[1].AsFloatf(100.0f),
-      args[2].AsFloatf(100.0f),
-      args[3].AsFloatf(100.0f),
+      args[1].AsFloat(100.0) / 100.0,
+      args[2].AsFloat(100.0) / 100.0,
+      args[3].AsFloat(100.0) / 100.0,
       &args[4],
+      env);
+
+	}
+	catch (...) { throw; }
+}
+
+// Rational pair arguments
+AVSValue __cdecl AVSsoundtouch::CreateRational(AVSValue args, void*, IScriptEnvironment* env) {
+	try {	// HIDE DAMN SEH COMPILER BUG!!!
+  return new AVSsoundtouch(
+      args[0].AsClip(),
+      (double)args[1].AsInt(1) / args[2].AsInt(1),
+      (double)args[3].AsInt(1) / args[4].AsInt(1),
+      (double)args[5].AsInt(1) / args[6].AsInt(1),
+      &args[7],
       env);
 
 	}
@@ -193,5 +205,6 @@ AVSValue __cdecl AVSsoundtouch::Create(AVSValue args, void*, IScriptEnvironment*
 
 extern const AVSFunction Soundtouch_filters[] = {
   { "TimeStretch", "c[tempo]f[rate]f[pitch]f[sequence]i[seekwindow]i[overlap]i[quickseek]b[aa]i", AVSsoundtouch::Create },
+  { "TimeStretch", "c[tempo_n]i[tempo_d]i[rate_n]i[rate_d]i[pitch_n]i[pitch_d]i[sequence]i[seekwindow]i[overlap]i[quickseek]b[aa]i", AVSsoundtouch::CreateRational },
   { 0 }
 };
