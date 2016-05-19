@@ -13,3 +13,7 @@ http://www.surina.net/soundtouch/soundtouch-1.8.0.zip
 http://www.surina.net/soundtouch/soundtouch-1.9.0.zip
 
 01 Jun 2015 IanB
+
+http://www.surina.net/soundtouch/soundtouch-1.9.2.tar.gz
+
+18 May 2016 IanB
