@@ -1958,6 +1958,9 @@ AVSValue __cdecl Create_Version(AVSValue args, void*, IScriptEnvironment* env) {
   return Create_MessageClip(AVS_FULLVERSION AVS_COPYRIGHT, -1, -1, VideoInfo::CS_BGR24, false, 0xECF2BF, 0, 0x404040, env);
 }
 
+AVSValue __cdecl Create_VersionExtended(AVSValue args, void*, IScriptEnvironment* env) {
+  return Create_MessageClip(AVS_FULLVERSION AVS_COMPILER AVS_COPYRIGHT, -1, -1, VideoInfo::CS_BGR24, false, 0xECF2BF, 0, 0x404040, env);
+}
 
 extern const AVSFunction Source_filters[] = {
   { "AVISource",     BUILTIN_FUNC_PREFIX, "s+[audio]b[pixel_type]s[fourCC]s[vtrack]i[atrack]i[utf8]b", AVISource::Create, (void*) AVISource::MODE_NORMAL },
@@ -1984,6 +1987,7 @@ extern const AVSFunction Source_filters[] = {
   { "Tone", BUILTIN_FUNC_PREFIX, "[length]f[frequency]f[samplerate]i[channels]i[type]s[level]f", Tone::Create },
 
   { "Version", BUILTIN_FUNC_PREFIX, "", Create_Version },
+  { "VersionEx", BUILTIN_FUNC_PREFIX, "", Create_VersionExtended },
 
   { NULL }
 };

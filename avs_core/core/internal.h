@@ -46,6 +46,12 @@
 #define AVS_COPYRIGHT "\n\xA9 2000-2015 Ben Rudiak-Gould, et al.\nhttp://avisynth.nl\n\xA9 2013-2020 AviSynth+ Project"
 #define BUILTIN_FUNC_PREFIX "AviSynth"
 
+#if defined(GCC)
+#define AVS_COMPILER_INFO \nGNU Compiler Collection version __VERSION__
+#elif defined(MSVC)
+#define AVS_COMPILER_INFO \nMicrosoft Visual C++ version _MSC_FULL_VER
+#endif
+
 enum MANAGE_CACHE_KEYS
 {
   MC_RegisterCache     = (int)0xFFFF0004,
