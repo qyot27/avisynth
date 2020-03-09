@@ -35,8 +35,13 @@
 #ifndef __Image_Sequence_H__
 #define __Image_Sequence_H__
 
-#include "il.h"
-#include <avs/win.h>
+#include "IL/il.h"
+#ifdef AVS_WINDOWS
+    #include <avs/win.h>
+#else
+    #include <avs/posix.h>
+    #define MAX_PATH PATH_MAX
+#endif
 #include <cassert>
 #include <fstream>
 
@@ -81,7 +86,7 @@ public:
 
   PVideoFrame __stdcall GetFrame(int n, IScriptEnvironment* env);
 
-  void __stdcall GetAudio(void* buf, __int64 start, __int64 count, IScriptEnvironment* env) {}
+  void __stdcall GetAudio(void* buf, int64_t start, int64_t count, IScriptEnvironment* env) {}
   const VideoInfo& __stdcall GetVideoInfo() { return vi; }
   bool __stdcall GetParity(int n) { return false; }
   int __stdcall SetCacheHints(int cachehints,int frame_range) { return 0; };

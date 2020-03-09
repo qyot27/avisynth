@@ -24,6 +24,7 @@ if (MINGW)
   set_target_properties(${ProjectName} PROPERTIES IMPORT_PREFIX "")
 endif()
 
+if (MSVC OR MINGW)
 if( CMAKE_SIZEOF_VOID_P EQUAL 4 ) # 32-bit
   # Specify include directories
   target_include_directories(${ProjectName} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/lib/DevIL_x86 ${AvsCore_SOURCE_DIR})
@@ -38,6 +39,12 @@ else()   # 64-bit
   target_link_libraries(${ProjectName} "${CMAKE_CURRENT_SOURCE_DIR}/lib/DevIL_x64/DevIL.lib")
   # Copy binary dependencies to a common folder for easy deployment
   configure_file("${PROJECT_SOURCE_DIR}/lib/DevIL_x64/DevIL.dll" "${CMAKE_BINARY_DIR}/Output/system/DevIL.dll" COPYONLY)
+endif()
+else()
+  find_package(DevIL)
+  if(DevIL_FOUND)
+    list(APPEND PLATFORM_LIBS ${IL_LIBRARIES})
+  endif()
 endif()
 
 if (MSVC_IDE)
