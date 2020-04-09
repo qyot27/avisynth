@@ -22,7 +22,9 @@ if (MINGW)
 endif()
 
 # Library dependencies
+if (WIN32)
 add_subdirectory("SoundTouch")
+endif()
 target_link_libraries(${ProjectName} "SoundTouch")
 
 # Include directories
