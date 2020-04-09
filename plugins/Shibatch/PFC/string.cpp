@@ -38,7 +38,7 @@ void string_base::skip_trailing_char(unsigned skip)
 	if (need_trunc) truncate(trunc);
 }
 
-string_print_time::string_print_time(__int64 length)
+string_print_time::string_print_time(int64_t length)
 {
 	if (length<0) length=0;
 	char * out = buffer;
@@ -84,14 +84,14 @@ void string_base::add_float(double val,unsigned digits)
 	add_string(temp);
 }
 
-void string_base::add_int(signed __int64 val,unsigned base)
+void string_base::add_int(signed int64_t val,unsigned base)
 {
 	char temp[64];
 	_i64toa(val,temp,base);
 	add_string(temp);
 }
 
-void string_base::add_uint(unsigned __int64 val,unsigned base)
+void string_base::add_uint(unsigned int64_t val,unsigned base)
 {
 	char temp[64];
 	_ui64toa(val,temp,base);
@@ -559,7 +559,7 @@ void pfc_float_to_string(char * out,double val,unsigned precision,bool b_sign)
 	char temp[64];
 	if (val<0) {*(out++) = '-'; val = -val;}
 	else if (b_sign) {*(out++) = '+';}
-	_i64toa((__int64)(val * pow(10.0,(int)precision)),temp,10);
+	_i64toa((int64_t)(val * pow(10.0,(int)precision)),temp,10);
 	unsigned len = strlen(temp);
 	if (len <= precision)
 	{
@@ -585,7 +585,7 @@ void pfc_float_to_string(char * out,double val,unsigned precision,bool b_sign)
 double pfc_string_to_float(const char * src)
 {
 	bool neg = false;
-	__int64 val = 0;
+	int64_t val = 0;
 	int div = 0;
 	bool got_dot = false;
 

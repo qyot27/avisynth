@@ -14,7 +14,9 @@
 
 #include <malloc.h>
 
+#ifdef AVS_WINDOWS
 #include <tchar.h>
+#endif
 #include <stdio.h>
 
 #include <assert.h>

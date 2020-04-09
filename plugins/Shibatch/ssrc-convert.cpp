@@ -33,7 +33,11 @@
 // import and export plugins, or graphical user interfaces.
 
 #include "ssrc-convert.h"
+#ifdef AVS_WINDOWS
 #include <avs/win.h>
+#else
+#include <avs/posix.h>
+#endif
 
 
 /******************************************
@@ -85,7 +89,7 @@ SSRC::SSRC(PClip _child, int _target_rate, bool _fast, IScriptEnvironment* env)
  ****************************************/
 
 
-void __stdcall SSRC::GetAudio(void* buf, __int64 start, __int64 count, IScriptEnvironment* env)
+void __stdcall SSRC::GetAudio(void* buf, int64_t start, int64_t count, IScriptEnvironment* env)
 {
   if (skip_conversion) {
 		child->GetAudio(buf, start, count, env);

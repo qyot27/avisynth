@@ -1,6 +1,8 @@
 #ifndef _PFC_MEM_BLOCK_H_
 #define _PFC_MEM_BLOCK_H_
 
+#include <cstring>
+
 template<class T>
 class mem_ops
 {

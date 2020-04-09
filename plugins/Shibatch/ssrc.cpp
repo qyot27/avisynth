@@ -208,7 +208,7 @@ class Upsampler : public Resampler_i_base<REAL>
   using Resampler_i_base<REAL>::make_outbuf;
   using Resampler_i_base<REAL>::make_inbuf;
 
-  __int64 fs1;
+  int64_t fs1;
   int frqgcd,osf,fs2;
   REAL **stage1,*stage2;
   int n1,n1x,n1y,n2,n2b;
@@ -267,7 +267,7 @@ Upsampler<REAL>::Upsampler(const Resampler_base::CONFIG & c) : Resampler_i_base<
 
     frqgcd = gcd(sfrq, dfrq);
 
-    fs1 = (__int64)(sfrq / frqgcd) * (__int64)dfrq;
+    fs1 = (int64_t)(sfrq / frqgcd) * (int64_t)dfrq;
 
     if (fs1 / dfrq == 1) osf = 1;
     else if (fs1 / dfrq % 2 == 0) osf = 2;
